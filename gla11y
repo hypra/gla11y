@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 # Copyright (c) 2018 Martin Pieuchot <mpi@grenadille.net>
+# Copyright (c) 2018 Samuel Thibault <samuel.thibault@ens-lyon.org>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -31,6 +32,13 @@ widgets_ignored = [
     'GtkMenu',
     'GtkMenuItem',
     'GtkSeparatorMenuItem',
+]
+
+standard_gtkbuttons = [
+    'gtk-ok',
+    'gtk-cancel',
+    'gtk-help',
+    'gtk-close',
 ]
 
 def check_a11y_relation(filename, root):
@@ -112,6 +120,19 @@ def check_a11y_relation(filename, root):
                       " lines %s" %
                       (filename, obj.sourceline, obj.attrib['class'], lines))
                 continue
+
+        # Check for standard GtkButtons
+        if obj.attrib['class'] == "GtkButton":
+            labels = obj.findall("property[@name='label']")
+            if len(labels) > 1:
+                print("%s:%s ERROR: '%s' has multiple label properties: "
+                      " lines %s" %
+                      (filename, obj.sourceline, obj.attrib['class'], lines))
+            if len(labels) == 1:
+                # Has a <property name="label">
+                if labels[0].text in standard_gtkbuttons:
+                    # And it's a standard button
+                    continue
 
         print("%s:%s WARNING: '%s' is missing some a11y love" %
               (filename, obj.sourceline, obj.attrib['class']))
