@@ -20,8 +20,18 @@ import sys
 import argparse
 import lxml.etree as ET
 
-widgets_ignored = []
-
+widgets_ignored = [
+    'GtkFrame',
+    'GtkAlignment',
+    'GtkAdjustment',
+    'GtkDialog',
+    'GtkBox',
+    'GtkButtonBox',
+    'GtkGrid',
+    'GtkMenu',
+    'GtkMenuItem',
+    'GtkSeparatorMenuItem',
+]
 
 def check_a11y_relation(filename, root):
     """
