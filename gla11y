@@ -47,7 +47,7 @@ widgets_ignored = [
     'GtkCheckMenuItem',
 
     # Toolbars are fine
-    'GtkToolBar',
+    'GtkToolbar',
     'GtkSeparatorToolItem',
     'GtkToggleToolButton',
     'GtkToolButton',
