@@ -23,16 +23,37 @@ import lxml.etree as ET
 
 widgets_ignored = [
     'GtkFrame',
+    'GtkWindow',
+    'GtkScrolledWindow',
+    'GtkDialog',
+    'GtkMessageDialog',
+    'GtkSeparator',
+
     'GtkAlignment',
     'GtkAdjustment',
-    'GtkDialog',
     'GtkBox',
+    'GtkVBox',
     'GtkButtonBox',
     'GtkGrid',
+    'GtkSizeGroup',
+
+    'GtkScrollbar',
+
+    # Menus are fine
     'GtkMenu',
     'GtkMenuItem',
     'GtkMenuToolButton',
     'GtkSeparatorMenuItem',
+    'GtkCheckMenuItem',
+
+    # Toolbars are fine
+    'GtkToolBar',
+    'GtkSeparatorToolItem',
+    'GtkToggleToolButton',
+    'GtkToolButton',
+    'GtkToolItem',
+
+    'AtkObject',
 ]
 
 standard_gtkbuttons = [
