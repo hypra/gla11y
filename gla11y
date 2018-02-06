@@ -52,6 +52,7 @@ widgets_ignored = [
     # Storage objects
     'GtkListStore',
     'GtkTextBuffer',
+    'GtkTreeSelection',
 
     # Menus are fine
     'GtkMenu',
