@@ -42,6 +42,7 @@ widgets_ignored = [
     # Menus are fine
     'GtkMenu',
     'GtkMenuItem',
+    'GtkRadioMenuItem',
     'GtkMenuToolButton',
     'GtkSeparatorMenuItem',
     'GtkCheckMenuItem',
