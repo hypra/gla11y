@@ -27,8 +27,9 @@ widgets_ignored = [
     'GtkScrolledWindow',
     'GtkDialog',
     'GtkMessageDialog',
-    'GtkSeparator',
+    'GtkNotebook',
 
+    # Invisible actions
     'GtkAlignment',
     'GtkAdjustment',
     'GtkBox',
@@ -37,8 +38,20 @@ widgets_ignored = [
     'GtkButtonBox',
     'GtkGrid',
     'GtkSizeGroup',
+    'GtkSeparator',
+    'GtkExpander',
+    'GtkActionGroup',
+    'GtkViewport',
+    'GtkPaned',
+    'GtkCellRendererText',
 
     'GtkScrollbar',
+    'GtkListBox',
+    'GtkStatusBar',
+
+    # Storage objects
+    'GtkListStore',
+    'GtkTextBuffer',
 
     # Menus are fine
     'GtkMenu',
@@ -64,6 +77,7 @@ standard_gtkbuttons = [
     'gtk-cancel',
     'gtk-help',
     'gtk-close',
+    'gtk-revert-to-saved',
 ]
 
 def check_a11y_relation(filename, root):
