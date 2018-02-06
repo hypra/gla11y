@@ -43,7 +43,6 @@ widgets_ignored = [
     'GtkMenu',
     'GtkMenuItem',
     'GtkRadioMenuItem',
-    'GtkMenuToolButton',
     'GtkSeparatorMenuItem',
     'GtkCheckMenuItem',
 
@@ -51,6 +50,8 @@ widgets_ignored = [
     'GtkToolbar',
     'GtkSeparatorToolItem',
     'GtkToggleToolButton',
+    'GtkRadioToolButton',
+    'GtkMenuToolButton',
     'GtkToolButton',
     'GtkToolItem',
 
