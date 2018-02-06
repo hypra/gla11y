@@ -33,6 +33,7 @@ widgets_ignored = [
     'GtkAdjustment',
     'GtkBox',
     'GtkVBox',
+    'GtkHBox',
     'GtkButtonBox',
     'GtkGrid',
     'GtkSizeGroup',
