@@ -275,6 +275,6 @@ if __name__ == "__main__":
             traceback.print_exc()
             print("%s: error parsing file: %s" % (sys.argv[0], filename))
 
-        if errors > 0:
-            print("%s error%s generated" % (errors, 's' if errors > 0 else ''))
-            sys.exit(1)
+    if errors > 0:
+        print("%s error%s generated" % (errors, 's' if errors > 0 else ''))
+        sys.exit(1)
