@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.20.0 -->
+<child internal-child="vbox">
+	<child>
+		<object class="GtkLabel" id="customft">
+			<property name="mnemonic_widget">custom</property>
+			<property name="mnemonic_widget">custom2</property>
+		</object>
+	</child>
+	<child>
+		<object class="GtkComboBoxText" id="custom">
+		</object>
+  </child>
+	<child>
+		<object class="GtkComboBoxText" id="custom2">
+		</object>
+  </child>
+</child>

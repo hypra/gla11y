@@ -81,6 +81,47 @@ standard_gtkbuttons = [
     'gtk-revert-to-saved',
 ]
 
+pflag = False
+Wflag = False
+errors = 0
+
+
+def errstr(elm):
+    """
+    Print the line number or the XML class path.
+    """
+    global pflag
+
+    if pflag:
+        path = elm.attrib['class']
+        elm = elm.getparent()
+        while elm is not None:
+            klass = elm.attrib.get('class')
+            if klass is not None:
+                path = klass + '/' + path
+            elm = elm.getparent()
+        return path
+    return str(elm.sourceline)
+
+
+def err(filename, elm, msg):
+    global errors
+
+    errors += 1
+    prefix = "%s:%s ERROR: " % (filename, errstr(elm))
+    print(prefix + msg)
+
+
+def warn(filename, elm, msg):
+    global Wflag, errors
+
+    if Wflag:
+        errors += 1
+
+    prefix = "%s:%s WARNING: " % (filename, errstr(elm))
+    print(prefix + msg)
+
+
 def check_a11y_relation(filename, root):
     """
     Emit an error message if any of the 'object' elements of the XML
@@ -91,48 +132,59 @@ def check_a11y_relation(filename, root):
         if obj.attrib['class'] in widgets_ignored:
             continue
 
-        # Case 0: 'GtkLabel' elements
         if obj.attrib['class'] == 'GtkLabel':
-            # either "label-for" points to an existing element...
-            rel = obj.find("accessibility/relation[@type='label-for']")
-            if rel is not None:
-                target = rel.attrib['target']
-                objects = root.iterfind(".//object[@id='%s']" % target)
-                if len(list(objects)) == 0:
-                    print("%s:%s ERROR: target '%s' not found" %
-                          (filename, rel.sourceline, target))
+            # Case 0: A 'GtkLabel' must contain one or more "label-for"
+            # pointing to existing elements or...
+            rels = obj.findall("accessibility/relation[@type='label-for']")
+            if len(rels) > 0:
+                for rel in rels:
+                    target = rel.attrib['target']
+                    targets = root.iterfind(".//object[@id='%s']" % target)
+                    if len(list(targets)) == 0:
+                        err(filename, rel,
+                            "use of undeclared target '%s'" % target)
                 continue
 
-            # ...or "mnemonic_widget"
-            prop = obj.find("property[@name='mnemonic_widget']")
-            if prop is not None:
+            # ...a single "mnemonic_widget"
+            properties = obj.findall("property[@name='mnemonic_widget']")
+            if len(properties) > 1:
+                lines = ', '.join([str(p.sourceline) for p in properties])
+                err(filename, obj, "too many sub-elements"
+                    ", expected single <property name='mnemonic_widgets'>"
+                    ": lines %s" % lines)
+                continue
+            if len(properties) == 1:
+                prop = properties[0]
                 objects = root.iterfind(".//object[@id='%s']" % prop.text)
                 if len(list(objects)) == 0:
-                    print("%s:%s ERROR: mnemonic_widget '%s' not found" %
-                          (filename, prop.sourceline, prop.text))
+                    err(filename, prop,
+                        "use of undeclared target '%s'" % prop.text)
                 continue
-            print("%s:%s WARNING: '%s' has no label-for nor mnemonic_widget" %
-                  (filename, obj.sourceline, obj.attrib['class']))
+            warn(filename, obj, "missing sub-element"
+                 ", expected single <property name='mnemonic_widgets'> or "
+                 "one or more <relation type='label-for'>")
             continue
 
         # Case 1: has a <child internal-child="accessible"> sub-element
         children = obj.findall("child[@internal-child='accessible']")
         if children:
             if len(children) > 1:
-                print("%s:%s ERROR: multiple accessible children" %
-                      (filename, obj.sourceline))
+                lines = ', '.join([str(c.sourceline) for c in children])
+                err(filename, obj, "too many sub-elements"
+                    ", expected single <child internal-child='accessible'>"
+                    ": lines %s" % lines)
             continue
 
         # Case 2: has an <accessibility> sub-element with a "labelled-by"
         # <relation> pointing to an existing element.
-        relations = obj.findall("accessibility/relation[@type='labelled-by']")
-        if len(relations) > 0:
-            for rel in relations:
+        rels = obj.findall("accessibility/relation[@type='labelled-by']")
+        if len(rels) > 0:
+            for rel in rels:
                 target = rel.attrib['target']
                 targets = root.iterfind(".//object[@id='%s']" % target)
                 if len(list(targets)) == 0:
-                    print("%s:%s ERROR: target '%s' not found" %
-                          (filename, rel.sourceline, target))
+                    err(filename, rel,
+                        "use of undeclared target '%s'" % target)
             continue
 
         # Case 3/4: has an ID...
@@ -140,13 +192,14 @@ def check_a11y_relation(filename, root):
         if oid is not None:
             # ...referenced by a single "label-for" <relation>
             rels = root.iterfind(".//relation[@target='%s']" % oid)
-            relations = [r for r in rels if r.attrib['type'] == 'label-for']
-            if len(relations) == 1:
+            labelfor = [r for r in rels if r.attrib.get('type') == 'label-for']
+            if len(labelfor) == 1:
                 continue
-            if len(relations) > 1:
-                lines = ', '.join([str(r.sourceline) for r in relations])
-                print("%s:%s ERROR: '%s' has multiple relations: lines %s" %
-                      (filename, obj.sourceline, obj.attrib['class'], lines))
+            if len(labelfor) > 1:
+                lines = ', '.join([str(l.sourceline) for l in labelfor])
+                err(filename, obj, "too many elements"
+                    ", expected single <relation type='label-for' target='%s'>"
+                    ": lines %s" % (oid, lines))
                 continue
 
             # ...referenced by a single "mnemonic_widget"
@@ -156,10 +209,16 @@ def check_a11y_relation(filename, root):
                 continue
             if len(props) > 1:
                 lines = ', '.join([str(p.sourceline) for p in props])
-                print("%s:%s ERROR: '%s' has multiple mnemonic_widget:"
-                      " lines %s" %
-                      (filename, obj.sourceline, obj.attrib['class'], lines))
+                err(filename, obj, "'%s' has multiple mnemonic_widget:"
+                    " lines %s" % (obj.attrib['class'], lines))
+                err(filename, obj, "too many elements"
+                    ", expected single "
+                    "<property name='mnemonic_widgets'>%s</property>"
+                    ": lines %s" % (oid, lines))
                 continue
+
+            warn(filename, obj, "element '%s' has no relation" % oid)
+            continue
 
         # Check for standard GtkButtons
         if obj.attrib['class'] == "GtkButton":
@@ -174,20 +233,31 @@ def check_a11y_relation(filename, root):
                     # And it's a standard button
                     continue
 
-        print("%s:%s WARNING: '%s' is missing some a11y love" %
-              (filename, obj.sourceline, obj.attrib['class']))
+        klass = obj.attrib['class']
+        warn(filename, obj, "'%s' is missing some a11y love" % klass)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument('-p', action='store_true',
+                        help="print path in messages")
+    parser.add_argument('-W', action='store_true',
+                        help="make all warnings into errors")
     parser.add_argument('file', nargs='+', help="glade .ui file")
     parser.add_argument('-i', dest='widgets', help="list of widgets to ignore")
+    parser.add_argument('-I', action='store_true',
+                        help="do not ignore any widget")
 
     args = parser.parse_args()
 
     if args.widgets is not None:
-        widgets_ignored = args.widgets.split(',')
+        widgets_ignored.extend(args.widgets.split(','))
 
+    if args.I:
+        widgets_ignored = []
+
+    pflag = args.p
+    Wflag = args.W
     for filename in args.file:
         try:
             tree = ET.parse(filename)
@@ -204,3 +274,7 @@ if __name__ == "__main__":
             import traceback
             traceback.print_exc()
             print("%s: error parsing file: %s" % (sys.argv[0], filename))
+
+        if errors > 0:
+            print("%s error%s generated" % (errors, 's' if errors > 0 else ''))
+            sys.exit(1)
