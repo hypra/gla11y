@@ -1,5 +1,5 @@
 
-GLA11Y ?=	gla11y
+GLA11Y ?=	../gla11y
 TESTS =		000-multiple_a11y_children \
 		001-non_existing_labelled-by \
 		002-multiple_label-for \
