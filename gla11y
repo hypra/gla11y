@@ -190,6 +190,19 @@ def check_a11y_relation(filename, root):
                         "use of undeclared target '%s'" % target)
             continue
 
+        # TODO: check with orca
+        ## has an <accessibility> sub-element with a "member-of"
+        ## <relation> pointing to an existing element.
+        #rels = obj.findall("accessibility/relation[@type='member-of']")
+        #if len(rels) > 0:
+        #    for rel in rels:
+        #        target = rel.attrib['target']
+        #        targets = root.iterfind(".//object[@id='%s']" % target)
+        #        if len(list(targets)) == 0:
+        #            err(filename, rel,
+        #                "use of undeclared target '%s'" % target)
+        #    continue
+
         # Case 3/4: has an ID...
         oid = obj.attrib.get('id')
         if oid is not None:
