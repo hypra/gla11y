@@ -29,6 +29,9 @@ widgets_ignored = [
     'GtkMessageDialog',
     'GtkNotebook',
 
+    # a lot of false positives there
+    'GtkButton',
+
     # Invisible actions
     'GtkAlignment',
     'GtkAdjustment',
