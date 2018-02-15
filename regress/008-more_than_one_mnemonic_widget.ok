@@ -1,2 +1,2 @@
 008-more_than_one_mnemonic_widget.ui:5 ERROR: too many sub-elements, expected single <property name='mnemonic_widgets'>: lines 6, 7
-1 errors generated
+1 error generated
