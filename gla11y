@@ -117,7 +117,8 @@ progname = os.path.basename(sys.argv[0])
 logprefixes = []
 logfile = sys.stdout
 pflag = False
-Wflag = False
+Werror = False
+Wnone = False
 errors = 0
 errexists = 0
 warnings = 0
@@ -162,17 +163,20 @@ def err(filename, elm, msg):
 
 
 def warn(filename, elm, msg):
-    global Wflag, errors, errexists, warnings, warnexists
+    global Werror, Wnone, errors, errexists, warnings, warnexists
+
+    if Wnone:
+        return
 
     prefix = "%s:%s" % (filename, errstr(elm))
     if prefix in logprefixes:
-        if Wflag:
+        if Werror:
             errexists += 1
         else:
             warnexists += 1
         return
 
-    if Wflag:
+    if Werror:
         errors += 1
     else:
         warnings += 1
@@ -312,16 +316,16 @@ def check_a11y_relation(filename, root):
 
 
 def usage():
-    print("%s [-pW] [-i widgets] [-l log [-a]] [file ...]" % progname,
+    print("%s [-p] [-W error|none] [-i widgets] [-l log [-a]] [file ...]" % progname,
           file=sys.stderr)
     sys.exit(2)
 
 
 def main():
-    global pflag, Wflag, logfile, logprefixes, widgets_ignored
+    global pflag, Werror, Wnone, logfile, logprefixes, errors, widgets_ignored
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ai:Il:pW")
+        opts, args = getopt.getopt(sys.argv[1:], "ai:Il:pW:")
     except getopt.GetoptError:
         usage()
 
@@ -342,7 +346,10 @@ def main():
         elif o == "-p":
             pflag = True
         elif o == "-W":
-            Wflag = True
+            if a == "error":
+                Werror = True
+            elif a == "none":
+                Wnone = True
 
     if ignore and widgets:
         usage()
