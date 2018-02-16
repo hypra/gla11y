@@ -189,6 +189,24 @@ def warn(filename, elm, msg):
     print(msg.encode('ascii', 'ignore'), file=logfile)
 
 
+def check_objects(filename, elm, objects, target):
+    """
+    Check that objects contains exactly one object
+    """
+    length = len(list(objects))
+    if length == 0:
+        err(filename, elm, "use of undeclared target '%s'" % target)
+    elif length > 1:
+        err(filename, elm, "sevral targets are named '%s'" % target)
+
+def check_props(filename, root, props):
+    """
+    Check the given list of relation properties
+    """
+    for prop in props:
+        objects = root.iterfind(".//object[@id='%s']" % prop.text)
+        check_objects(filename, prop, objects, prop.text)
+
 def check_rels(filename, root, rels):
     """
     Check the given list of relations
@@ -196,11 +214,7 @@ def check_rels(filename, root, rels):
     for rel in rels:
         target = rel.attrib['target']
         targets = root.iterfind(".//object[@id='%s']" % target)
-        length = len(list(targets))
-        if length == 0:
-            err(filename, rel, "use of undeclared target '%s'" % target)
-        if length > 1:
-            err(filename, rel, "several targets '%s'" % target)
+        check_objects(filename, rel, targets, target)
 
 def check_a11y_relation(filename, root):
     """
@@ -231,6 +245,7 @@ def check_a11y_relation(filename, root):
 
             # ...a single "mnemonic_widget"
             properties = obj.findall("property[@name='mnemonic_widget']")
+            check_props(filename, root, properties)
             if len(properties) > 1:
                 lines = ', '.join([str(p.sourceline) for p in properties])
                 err(filename, obj, "too many sub-elements"
@@ -238,11 +253,6 @@ def check_a11y_relation(filename, root):
                     ": lines %s" % lines)
                 continue
             if len(properties) == 1:
-                prop = properties[0]
-                objects = root.iterfind(".//object[@id='%s']" % prop.text)
-                if len(list(objects)) == 0:
-                    err(filename, prop,
-                        "use of undeclared target '%s'" % prop.text)
                 continue
             if 'id' in obj.attrib:
                 name = " '%s'" % obj.attrib['id']
