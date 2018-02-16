@@ -158,7 +158,7 @@ def err(filename, elm, msg):
         return
 
     errors += 1
-    msg = "%s ERROR: %s" % (prefix,  msg)
+    msg = "%s ERROR: %s" % (prefix, msg)
     print(msg.encode('ascii', 'ignore'), file=logfile)
 
 
