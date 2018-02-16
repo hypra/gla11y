@@ -229,9 +229,13 @@ def check_a11y_relation(filename, root):
                     err(filename, prop,
                         "use of undeclared target '%s'" % prop.text)
                 continue
-            warn(filename, obj, "label '%s' missing sub-element"
+            if 'id' in obj.attrib:
+                name = " '%s'" % obj.attrib['id']
+            else:
+                name = ""
+            warn(filename, obj, "label%s missing sub-element"
                  ", expected single <property name='mnemonic_widgets'> or "
-                 "one or more <relation type='label-for'>" % obj.attrib['id'])
+                 "one or more <relation type='label-for'>" % name)
             continue
 
         # Case 1: has a <child internal-child="accessible"> sub-element
