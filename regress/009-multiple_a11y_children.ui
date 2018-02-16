@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.20.0 -->
+<object class="GtkComboBox" id="type_log_1">
+	<child internal-child="accessible">
+		<object class="AtkObject" id="type_log_1-atkobject">
+		</object>
+	</child>
+	<child internal-child="accessible">
+		<object class="AtkObject" id="type_log_1-atkobject">
+		</object>
+	</child>
+</object>

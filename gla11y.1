@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2018 Martin Pieuchot <mpi@grenadille.net>
+.\" Copyright (c) 2018 Martin Pieuchot
 .\"
 .\" Permission to use, copy, modify, and distribute this software for any
 .\" purpose with or without fee is hereby granted, provided that the above
@@ -21,10 +21,10 @@
 .Nd check accessibility of glade widgets
 .Sh SYNOPSIS
 .Nm
-.Op Fl hp
+.Op Fl pW
 .Op Fl i Ar widgets
-.Ar file
-.Op file ...
+.Op Fl l Ar log Op Fl a
+.Op Ar file ...
 .Sh DESCRIPTION
 The
 .Nm
@@ -34,15 +34,27 @@ respect glade accessibility rules.
 It prints messages for every error it encounters.
 .Pp
 The options are as follows:
-.Bl -tag -width Ds
-.It Fl h
-Show help message and exit.
+.Bl -tag -width -i_widgets
+.It Fl a
+Append messages to
+.Ar log
+instead of printing them to stdout.
+This option has no effect unless
+.Fl l
+is specified.
 .It Fl i Ar widgets
 Do not check elements whose class is listed in
 .Ar widgets .
-By default the following widgets are ignored: GtkBox, GtkVBox
+By default the following widgets are ignored:
+.Em GtkBox ,
+.Em GtkVBox .
 .It Fl I
 Do not ignore any widget.
+.It Fl l Ar log
+Do not print messages already present in
+.Ar log .
+This option implies
+.Fl p .
 .It Fl p
 Print class paths instead of line numbers in messages.
 .It Fl W
@@ -51,9 +63,18 @@ Make all warnings into errors.
 .Sh EXIT STATUS
 .Ex -std gla11y
 .Sh EXAMPLES
-To check all the widgets but GtkLabel and AtkObject in file the sortdialog.ui:
+To check all the widgets but
+.Em GtkLabel
+and
+.Em AtkObject
+in the file sortdialog.ui:
 .Bd -literal -offset indent
 gla11y -i GtkLabel,AtkObject sortdialog.ui
 .Ed
-.Sh AUTHORS
-.An Martin Pieuchot Aq Mt mpi@grenadille.net
+.Pp
+To check if new errors have been introduced in sortdialog.ui since the
+generation of
+.Em error.log :
+.Bd -literal -offset indent
+gla11y -l error.log sortdialog.ui
+.Ed

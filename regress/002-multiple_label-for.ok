@@ -1,2 +1,2 @@
 002-multiple_label-for.ui:5 ERROR: too many elements, expected single <relation type='label-for' target='colsb1'>: lines 11, 18
-1 errors generated
+1 error generated

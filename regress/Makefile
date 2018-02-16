@@ -10,10 +10,15 @@ TESTS =		000-multiple_a11y_children \
 		007-multiple_label-for \
 		008-more_than_one_mnemonic_widget
 
-all: $(TESTS)
+LOGTESTS =	009-multiple_a11y_children
+
+all: $(TESTS) $(LOGTESTS)
 
 $(TESTS):
 	$(GLA11Y) $@.ui | diff -u $@.ok /dev/stdin
 
-.PHONY: all $(TESTS)
+$(LOGTESTS):
+	$(GLA11Y) -l regress.log $@.ui | diff -u $@.ok /dev/stdin
+
+.PHONY: all $(TESTS) $(LOGTESTS)
 

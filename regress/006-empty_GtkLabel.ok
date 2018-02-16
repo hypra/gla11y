@@ -1,1 +1,2 @@
 006-empty_GtkLabel.ui:5 WARNING: missing sub-element, expected single <property name='mnemonic_widgets'> or one or more <relation type='label-for'>
+1 warning generated
