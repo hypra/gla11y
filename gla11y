@@ -48,14 +48,20 @@ widgets_ignored = [
     'GtkPaned',
     'GtkCellRendererText',
 
+    'sfxlo-PriorityHBox',
+    'sfxlo-PriorityMergedHBox',
+    'sfxlo-ContextVBox',
+
     'GtkScrollbar',
     'GtkListBox',
-    'GtkStatusBar',
+    'GtkStatusbar',
 
     # Storage objects
     'GtkListStore',
     'GtkTextBuffer',
     'GtkTreeSelection',
+
+    'svtlo-ValueSet',
 
     # Menus are fine
     'GtkMenu',
@@ -73,8 +79,28 @@ widgets_ignored = [
     'GtkToolButton',
     'GtkToolItem',
 
+    'sfxlo-NotebookbarToolBox',
+    'svtlo-ManagedMenuButton',
+    'vcllo-SmallButton',
+    'sfxlo-NotebookbarTabControl',
+    'sfxlo-DropdownBox',
+    'sfxlo-OptionalBox',
+
     'AtkObject',
 ]
+
+# To include for LO for sure:
+# svxcorelo-SvxColorListBox
+# svxcorelo-SvxLanguageBox
+# foruilo-RefButton
+# sfxlo-SvxCharView
+# sfxlo-SidebarToolBox
+# foruilo-RefEdit
+
+# svtlo-SvSimpleTableContainer ?
+
+# svxcorelo-SvxCheckListBox ?
+# svtlo-SvTreeListBox ?
 
 standard_gtkbuttons = [
     'gtk-ok',
