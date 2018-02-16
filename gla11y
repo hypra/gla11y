@@ -159,7 +159,7 @@ def err(filename, elm, msg):
 
     errors += 1
     msg = "%s ERROR: %s" % (prefix,  msg)
-    print(msg.encode('utf-8', 'ignore'), file=logfile)
+    print(msg.encode('ascii', 'ignore'), file=logfile)
 
 
 def warn(filename, elm, msg):
@@ -182,7 +182,7 @@ def warn(filename, elm, msg):
         warnings += 1
 
     msg = "%s WARNING: %s" % (prefix,  msg)
-    print(msg.encode('utf-8', 'ignore'), file=logfile)
+    print(msg.encode('ascii', 'ignore'), file=logfile)
 
 
 def check_a11y_relation(filename, root):
@@ -362,7 +362,7 @@ def main():
         if os.path.exists(lfile):
             log = open(lfile, 'r+')
             for f in log.readlines():
-                prefix = f.split(' ')[0].decode('utf-8')
+                prefix = f.split(' ')[0].decode('ascii')
                 logprefixes.append(prefix)
             log.close()
 
