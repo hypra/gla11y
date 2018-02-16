@@ -189,6 +189,19 @@ def warn(filename, elm, msg):
     print(msg.encode('ascii', 'ignore'), file=logfile)
 
 
+def check_rels(filename, root, rels):
+    """
+    Check the given list of relations
+    """
+    for rel in rels:
+        target = rel.attrib['target']
+        targets = root.iterfind(".//object[@id='%s']" % target)
+        length = len(list(targets))
+        if length == 0:
+            err(filename, rel, "use of undeclared target '%s'" % target)
+        if length > 1:
+            err(filename, rel, "several targets '%s'" % target)
+
 def check_a11y_relation(filename, root):
     """
     Emit an error message if any of the 'object' elements of the XML
@@ -201,17 +214,19 @@ def check_a11y_relation(filename, root):
         if obj.attrib['class'] in widgets_ignored:
             continue
 
+        label_for = obj.findall("accessibility/relation[@type='label-for']")
+        check_rels(filename, root, label_for)
+
+        labelled_by = obj.findall("accessibility/relation[@type='labelled-by']")
+        check_rels(filename, root, labelled_by)
+
+        member_of = obj.findall("accessibility/relation[@type='member-of']")
+        check_rels(filename, root, member_of)
+
         if obj.attrib['class'] == 'GtkLabel':
             # Case 0: A 'GtkLabel' must contain one or more "label-for"
             # pointing to existing elements or...
-            rels = obj.findall("accessibility/relation[@type='label-for']")
-            if len(rels) > 0:
-                for rel in rels:
-                    target = rel.attrib['target']
-                    targets = root.iterfind(".//object[@id='%s']" % target)
-                    if len(list(targets)) == 0:
-                        err(filename, rel,
-                            "use of undeclared target '%s'" % target)
+            if len(label_for) > 0:
                 continue
 
             # ...a single "mnemonic_widget"
@@ -250,27 +265,13 @@ def check_a11y_relation(filename, root):
 
         # Case 2: has an <accessibility> sub-element with a "labelled-by"
         # <relation> pointing to an existing element.
-        rels = obj.findall("accessibility/relation[@type='labelled-by']")
-        if len(rels) > 0:
-            for rel in rels:
-                target = rel.attrib['target']
-                targets = root.iterfind(".//object[@id='%s']" % target)
-                if len(list(targets)) == 0:
-                    err(filename, rel,
-                        "use of undeclared target '%s'" % target)
+        if len(labelled_by) > 0:
             continue
 
         # TODO: check with orca
         ## has an <accessibility> sub-element with a "member-of"
         ## <relation> pointing to an existing element.
-        #rels = obj.findall("accessibility/relation[@type='member-of']")
-        #if len(rels) > 0:
-        #    for rel in rels:
-        #        target = rel.attrib['target']
-        #        targets = root.iterfind(".//object[@id='%s']" % target)
-        #        if len(list(targets)) == 0:
-        #            err(filename, rel,
-        #                "use of undeclared target '%s'" % target)
+        #if len(member_of) > 0:
         #    continue
 
         # Case 3/4: has an ID...
