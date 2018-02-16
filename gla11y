@@ -302,9 +302,7 @@ def check_a11y_relation(filename, root):
         if obj.attrib['class'] == "GtkButton":
             labels = obj.findall("property[@name='label']")
             if len(labels) > 1:
-                print("%s:%s ERROR: '%s' has multiple label properties: "
-                      " lines %s" %
-                      (filename, obj.sourceline, obj.attrib['class'], lines))
+                err(filename, obj, "has multiple label properties")
             if len(labels) == 1:
                 # Has a <property name="label">
                 if labels[0].text in standard_gtkbuttons:
