@@ -1,5 +1,3 @@
 009-multiple_a11y_children.ui:GtkComboBox[@id='type_log_1'] ERROR: too many sub-elements, expected single <child internal-child='accessible'>: lines 4, 8
-009-multiple_a11y_children.ui:GtkComboBox[@id='type_log_1']/AtkObject[@id='type_log_1-atkobject'] WARNING: element 'type_log_1-atkobject' has no relation
-009-multiple_a11y_children.ui:GtkComboBox[@id='type_log_1']/AtkObject[@id='type_log_1-atkobject'] WARNING: element 'type_log_1-atkobject' has no relation
 1 error generated
 2 warnings generated
