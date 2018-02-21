@@ -114,7 +114,7 @@ standard_gtkbuttons = [
 ]
 
 progname = os.path.basename(sys.argv[0])
-suppr_prefixes = []
+suppressions = []
 gen_supprfile = None
 pflag = False
 Werror = False
@@ -173,18 +173,20 @@ def elm_name(elm):
         return name
     return ""
 
-def err(filename, elm, msg):
+def err(filename, elm, msgtype, msg):
     global errors, errexists, pflag
 
     prefix = errpath(filename, elm)
+    suppr = '%s %s' % (prefix, msgtype)
+    suppr = suppr.encode('ascii', 'ignore')
 
-    if prefix in suppr_prefixes:
+    if gen_supprfile is not None:
+        print(suppr, file=gen_supprfile)
+
+    if suppr in suppressions:
         # Suppressed
         errexists += 1
         return
-
-    if gen_supprfile is not None:
-        print('%s ' % prefix, file=gen_supprfile)
 
     if not pflag:
         # Use user-friendly line numbers
@@ -195,23 +197,26 @@ def err(filename, elm, msg):
     print(msg.encode('ascii', 'ignore'))
 
 
-def warn(filename, elm, msg):
+def warn(filename, elm, msgtype, msg):
     global Werror, Wnone, errors, errexists, warnings, warnexists, pflag
 
     if Wnone:
         return
 
     prefix = errpath(filename, elm)
-    if prefix in suppr_prefixes:
+    suppr = '%s %s' % (prefix, msgtype)
+    suppr = suppr.encode('ascii', 'ignore')
+
+    if gen_supprfile is not None:
+        print(suppr, file=gen_supprfile)
+
+    if suppr in suppressions:
         # Suppressed
         if Werror:
             errexists += 1
         else:
             warnexists += 1
         return
-
-    if gen_supprfile is not None:
-        print('%s ' % prefix, file=gen_supprfile)
 
     if Werror:
         errors += 1
@@ -232,9 +237,9 @@ def check_objects(filename, elm, objects, target):
     """
     length = len(list(objects))
     if length == 0:
-        err(filename, elm, "uses of undeclared target '%s'" % target)
+        err(filename, elm, "undeclared-target", "uses of undeclared target '%s'" % target)
     elif length > 1:
-        err(filename, elm, "several targets are named '%s'" % target)
+        err(filename, elm, "multiple-target", "several targets are named '%s'" % target)
 
 def check_props(filename, root, props):
     """
@@ -285,13 +290,13 @@ def check_a11y_relation(filename, root):
             check_props(filename, root, properties)
             if len(properties) > 1:
                 lines = ', '.join([str(p.sourceline) for p in properties])
-                err(filename, obj, "has too many sub-elements"
+                err(filename, obj, "multiple-mnemonic", "has too many sub-elements"
                     ", expected single <property name='mnemonic_widgets'>"
                     ": lines %s" % lines)
                 continue
             if len(properties) == 1:
                 continue
-            warn(filename, obj, "missing sub-element"
+            warn(filename, obj, "no-label-for", "missing sub-element"
                  ", expected single <property name='mnemonic_widgets'> or "
                  "one or more <relation type='label-for'>")
             continue
@@ -303,7 +308,7 @@ def check_a11y_relation(filename, root):
         if children:
             if len(children) > 1:
                 lines = ', '.join([str(c.sourceline) for c in children])
-                err(filename, obj, "has too many sub-elements"
+                err(filename, obj, "multiple-accessible", "has too many sub-elements"
                     ", expected single <child internal-child='accessible'>"
                     ": lines %s" % lines)
             continue
@@ -329,7 +334,7 @@ def check_a11y_relation(filename, root):
                 continue
             if len(labelfor) > 1:
                 lines = ', '.join([str(l.sourceline) for l in labelfor])
-                err(filename, obj, "has too many elements"
+                err(filename, obj, "multiple-label-for", "has too many elements"
                     ", expected single <relation type='label-for' target='%s'>"
                     ": lines %s" % (oid, lines))
                 continue
@@ -341,9 +346,9 @@ def check_a11y_relation(filename, root):
                 continue
             if len(props) > 1:
                 lines = ', '.join([str(p.sourceline) for p in props])
-                err(filename, obj, "has multiple mnemonic_widget:"
+                err(filename, obj, "multiple-mnemonic", "has multiple mnemonic_widget:"
                     " lines %s" % (lines))
-                err(filename, obj, "has too many elements"
+                err(filename, obj, "multiple-mnemonic", "has too many elements"
                     ", expected single "
                     "<property name='mnemonic_widgets'>%s</property>"
                     ": lines %s" % (oid, lines))
@@ -353,14 +358,14 @@ def check_a11y_relation(filename, root):
         if obj.attrib['class'] == "GtkButton":
             labels = obj.findall("property[@name='label']")
             if len(labels) > 1:
-                err(filename, obj, "has multiple label properties")
+                err(filename, obj, "multiple-label", "has multiple label properties")
             if len(labels) == 1:
                 # Has a <property name="label">
                 if labels[0].text in standard_gtkbuttons:
                     # And it's a standard button
                     continue
 
-        warn(filename, obj, "has no accessibility relation")
+        warn(filename, obj, "no-labelled-by", "has no accessibility relation")
 
 
 def usage():
@@ -374,7 +379,7 @@ def usage():
 
 
 def main():
-    global pflag, Werror, Wnone, gen_supprfile, suppr_prefixes, errors, widgets_ignored
+    global pflag, Werror, Wnone, gen_supprfile, suppressions, errors, widgets_ignored
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "W:piIg:s:")
@@ -412,15 +417,16 @@ def main():
     elif widgets:
         widgets_ignored.extend(widgets)
 
+    # Read suppression file before overwriting it
     if suppr is not None:
         try:
             supprfile = open(suppr, 'r')
-            for f in supprfile.readlines():
-                prefix = f.split(' ')[0].decode('ascii')
-                suppr_prefixes.append(prefix)
+            for line in supprfile.readlines():
+                prefix = line.decode('ascii').rstrip()
+                suppressions.append(prefix)
             supprfile.close()
         except IOError:
-            err(suppr, None, "unable to read suppression file")
+            err(suppr, None, "", "unable to read suppression file")
 
     if gen_suppr is not None:
         gen_supprfile = open(gen_suppr, 'w')
@@ -432,16 +438,16 @@ def main():
         try:
             tree = ET.parse(filename)
         except ET.ParseError:
-            err(filename, None, "malformatted xml file")
+            err(filename, None, "", "malformatted xml file")
         except IOError:
-            err(filename, None, "unable to read file")
+            err(filename, None, "", "unable to read file")
 
         try:
             check_a11y_relation(filename, tree.getroot())
         except Exception as error:
             import traceback
             traceback.print_exc()
-            err(filename, None, "error parsing file")
+            err(filename, None, "", "error parsing file")
 
     if errors > 0 or errexists > 0:
         estr = "%s new error%s" % (errors, 's' if errors > 1 else '')
