@@ -346,12 +346,8 @@ def check_a11y_relation(filename, root):
                 continue
             if len(props) > 1:
                 lines = ', '.join([str(p.sourceline) for p in props])
-                err(filename, obj, "multiple-mnemonic", "has multiple mnemonic_widget:"
+                warn(filename, obj, "multiple-mnemonic", "has multiple mnemonic_widget:"
                     " lines %s" % (lines))
-                err(filename, obj, "multiple-mnemonic", "has too many elements"
-                    ", expected single "
-                    "<property name='mnemonic_widgets'>%s</property>"
-                    ": lines %s" % (oid, lines))
                 continue
 
         # Check for standard GtkButtons
