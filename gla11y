@@ -130,7 +130,9 @@ def errpath(filename, elm):
     """
     if elm is None:
         return ""
-    path = elm.attrib['class']
+    path = ""
+    if 'class' in elm.attrib:
+        path += elm.attrib['class']
     oid = elm.attrib.get('id')
     if oid is not None:
         path += "[@id='%s']" % oid
@@ -167,9 +169,11 @@ def elm_name(elm):
     Return a display name of the element
     """
     if elm is not None:
-        name = "'%s'" % elm.attrib['class']
+        name = ""
+        if 'class' in elm.attrib:
+            name = "'%s' " % elm.attrib['class']
         if 'id' in elm.attrib:
-            name += " '%s'" % elm.attrib['id']
+            name += "'%s' " % elm.attrib['id']
         return name
     return ""
 
@@ -196,7 +200,7 @@ def err(filename, elm, msgtype, msg):
         prefix = elm_prefix(filename, elm)
 
     errors += 1
-    msg = "%s ERROR: %s %s" % (prefix, elm_name(elm), msg)
+    msg = "%s ERROR: %s%s" % (prefix, elm_name(elm), msg)
     print(msg.encode('ascii', 'ignore'))
 
 
@@ -233,7 +237,7 @@ def warn(filename, elm, msgtype, msg):
         # Use user-friendly line numbers
         prefix = elm_prefix(filename, elm)
 
-    msg = "%s WARNING: %s %s" % (prefix, elm_name(elm), msg)
+    msg = "%s WARNING: %s%s" % (prefix, elm_name(elm), msg)
     print(msg.encode('ascii', 'ignore'))
 
 
@@ -243,7 +247,7 @@ def check_objects(filename, elm, objects, target):
     """
     length = len(list(objects))
     if length == 0:
-        err(filename, elm, "undeclared-target", "uses of undeclared target '%s'" % target)
+        err(filename, elm, "undeclared-target", "uses undeclared target '%s'" % target)
     elif length > 1:
         err(filename, elm, "multiple-target", "several targets are named '%s'" % target)
 
