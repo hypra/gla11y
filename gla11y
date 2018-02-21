@@ -114,8 +114,8 @@ standard_gtkbuttons = [
 ]
 
 progname = os.path.basename(sys.argv[0])
-logprefixes = []
-logfile = sys.stdout
+suppr_prefixes = []
+gen_supprfile = None
 pflag = False
 Werror = False
 Wnone = False
@@ -124,10 +124,12 @@ errexists = 0
 warnings = 0
 warnexists = 0
 
-def errpath(elm):
+def errpath(filename, elm):
     """
     Return the XML class path of the element
     """
+    if elm is None:
+        return ""
     path = elm.attrib['class']
     oid = elm.attrib.get('id')
     if oid is not None:
@@ -141,6 +143,7 @@ def errpath(elm):
         if klass is not None:
             path = klass + '/' + path
         elm = elm.getparent()
+    path = filename + ':' + path
     return path
 
 def errstr(elm):
@@ -168,25 +171,28 @@ def elm_name(elm):
         if 'id' in elm.attrib:
             name += " '%s'" % elm.attrib['id']
         return name
-    return None
+    return ""
 
 def err(filename, elm, msg):
     global errors, errexists, pflag
 
-    prefix = elm_prefix(filename, elm)
+    prefix = errpath(filename, elm)
 
-    if prefix in logprefixes:
+    if prefix in suppr_prefixes:
         # Suppressed
         errexists += 1
         return
 
+    if gen_supprfile is not None:
+        print('%s ' % prefix, file=gen_supprfile)
+
     if not pflag:
         # Use user-friendly line numbers
-        prefix = errstr(elm)
+        prefix = elm_prefix(filename, elm)
 
     errors += 1
     msg = "%s ERROR: %s %s" % (prefix, elm_name(elm), msg)
-    print(msg.encode('ascii', 'ignore'), file=logfile)
+    print(msg.encode('ascii', 'ignore'))
 
 
 def warn(filename, elm, msg):
@@ -195,14 +201,17 @@ def warn(filename, elm, msg):
     if Wnone:
         return
 
-    prefix = elm_prefix(filename, elm)
-    if prefix in logprefixes:
+    prefix = errpath(filename, elm)
+    if prefix in suppr_prefixes:
         # Suppressed
         if Werror:
             errexists += 1
         else:
             warnexists += 1
         return
+
+    if gen_supprfile is not None:
+        print('%s ' % prefix, file=gen_supprfile)
 
     if Werror:
         errors += 1
@@ -211,10 +220,10 @@ def warn(filename, elm, msg):
 
     if not pflag:
         # Use user-friendly line numbers
-        prefix = errstr(elm)
+        prefix = elm_prefix(filename, elm)
 
     msg = "%s WARNING: %s %s" % (prefix, elm_name(elm), msg)
-    print(msg.encode('ascii', 'ignore'), file=logfile)
+    print(msg.encode('ascii', 'ignore'))
 
 
 def check_objects(filename, elm, objects, target):
@@ -355,40 +364,45 @@ def check_a11y_relation(filename, root):
 
 
 def usage():
-    print("%s [-p] [-W error|none] [-i widgets] [-l log [-a]] [file ...]" % progname,
+    print("%s [-W error|none] [-p] [-g SUPPR_FILE] [-s SUPPR_FILE] [-i WIDGET1,WIDGET2[,...]] [file ...]" % progname,
           file=sys.stderr)
+    print("  -p print XML class path instead of line number");
+    print("  -g Generate suppression file SUPPR_FILE");
+    print("  -s Suppress warnings given by file SUPPR_FILE");
+    print("  -i Ignore warnings for widgets of a given class");
     sys.exit(2)
 
 
 def main():
-    global pflag, Werror, Wnone, logfile, logprefixes, errors, widgets_ignored
+    global pflag, Werror, Wnone, gen_supprfile, suppr_prefixes, errors, widgets_ignored
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ai:Il:pW:")
+        opts, args = getopt.getopt(sys.argv[1:], "W:piIg:s:")
     except getopt.GetoptError:
         usage()
 
-    lfile = None
+    gen_suppr = None
+    suppr = None
     ignore = False
     append = False
     widgets = []
 
     for o, a in opts:
-        if o == "-a":
-            append = True
-        elif o == "-i":
-            widgets = a.split(',')
-        elif o == "-I":
-            ignore = True
-        elif o == "-l":
-            lfile = a
-        elif o == "-p":
-            pflag = True
-        elif o == "-W":
+        if o == "-W":
             if a == "error":
                 Werror = True
             elif a == "none":
                 Wnone = True
+        elif o == "-p":
+            pflag = True
+        elif o == "-i":
+            widgets = a.split(',')
+        elif o == "-I":
+            ignore = True
+        elif o == "-g":
+            gen_suppr = a
+        elif o == "-s":
+            suppr = a
 
     if ignore and widgets:
         usage()
@@ -398,18 +412,18 @@ def main():
     elif widgets:
         widgets_ignored.extend(widgets)
 
-    if lfile is not None:
-
-        if os.path.exists(lfile):
-            log = open(lfile, 'r+')
-            for f in log.readlines():
+    if suppr is not None:
+        try:
+            supprfile = open(suppr, 'r')
+            for f in supprfile.readlines():
                 prefix = f.split(' ')[0].decode('ascii')
-                logprefixes.append(prefix)
-            log.close()
+                suppr_prefixes.append(prefix)
+            supprfile.close()
+        except IOError:
+            err(suppr, None, "unable to read suppression file")
 
-        if append:
-            logfile = open(lfile, 'a')
-        pflag = True
+    if gen_suppr is not None:
+        gen_supprfile = open(gen_suppr, 'w')
 
     if not args:
         sys.exit("%s: no input files" % progname)
@@ -430,13 +444,13 @@ def main():
             err(filename, None, "error parsing file")
 
     if errors > 0 or errexists > 0:
-        estr = "%s error%s generated" % (errors, 's' if errors > 1 else '')
+        estr = "%s new error%s" % (errors, 's' if errors > 1 else '')
         if errexists > 0:
             estr += " (%s suppressed)" % errexists
         print(estr)
 
     if warnings > 0 or warnexists > 0:
-        wstr = "%s warning%s generated" % (warnings,
+        wstr = "%s new warning%s" % (warnings,
                                            's' if warnings > 1 else '')
         if warnexists > 0:
             wstr += " (%s suppressed)" % warnexists
