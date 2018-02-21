@@ -124,37 +124,45 @@ errexists = 0
 warnings = 0
 warnexists = 0
 
+def errpath(elm):
+    """
+    Return the XML class path of the element
+    """
+    path = elm.attrib['class']
+    oid = elm.attrib.get('id')
+    if oid is not None:
+        path += "[@id='%s']" % oid
+    elm = elm.getparent()
+    while elm is not None:
+        klass = elm.attrib.get('class')
+        oid = elm.attrib.get('id')
+        if oid is not None:
+            klass += "[@id='%s']" % oid
+        if klass is not None:
+            path = klass + '/' + path
+        elm = elm.getparent()
+    return path
 
 def errstr(elm):
     """
-    Print the line number or the XML class path.
+    Return the line number of the element
     """
-    global pflag
 
-    if pflag:
-        path = elm.attrib['class']
-        oid = elm.attrib.get('id')
-        if oid is not None:
-            path += "[@id='%s']" % oid
-        elm = elm.getparent()
-        while elm is not None:
-            klass = elm.attrib.get('class')
-            oid = elm.attrib.get('id')
-            if oid is not None:
-                klass += "[@id='%s']" % oid
-            if klass is not None:
-                path = klass + '/' + path
-            elm = elm.getparent()
-        return path
     return str(elm.sourceline)
 
 def elm_prefix(filename, elm):
+    """
+    Return the display prefix of the element
+    """
     if elm == None:
         return "%s:" % filename
     else:
         return "%s:%s" % (filename, errstr(elm))
 
 def elm_name(elm):
+    """
+    Return a display name of the element
+    """
     if elm is not None:
         name = "'%s'" % elm.attrib['class']
         if 'id' in elm.attrib:
@@ -163,13 +171,18 @@ def elm_name(elm):
     return None
 
 def err(filename, elm, msg):
-    global errors, errexists
+    global errors, errexists, pflag
 
     prefix = elm_prefix(filename, elm)
 
     if prefix in logprefixes:
+        # Suppressed
         errexists += 1
         return
+
+    if not pflag:
+        # Use user-friendly line numbers
+        prefix = errstr(elm)
 
     errors += 1
     msg = "%s ERROR: %s %s" % (prefix, elm_name(elm), msg)
@@ -177,13 +190,14 @@ def err(filename, elm, msg):
 
 
 def warn(filename, elm, msg):
-    global Werror, Wnone, errors, errexists, warnings, warnexists
+    global Werror, Wnone, errors, errexists, warnings, warnexists, pflag
 
     if Wnone:
         return
 
     prefix = elm_prefix(filename, elm)
     if prefix in logprefixes:
+        # Suppressed
         if Werror:
             errexists += 1
         else:
@@ -194,6 +208,10 @@ def warn(filename, elm, msg):
         errors += 1
     else:
         warnings += 1
+
+    if not pflag:
+        # Use user-friendly line numbers
+        prefix = errstr(elm)
 
     msg = "%s WARNING: %s %s" % (prefix, elm_name(elm), msg)
     print(msg.encode('ascii', 'ignore'), file=logfile)
