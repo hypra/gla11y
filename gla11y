@@ -148,21 +148,31 @@ def errstr(elm):
         return path
     return str(elm.sourceline)
 
+def elm_prefix(filename, elm):
+    if elm == None:
+        return "%s:" % filename
+    else:
+        return "%s:%s" % (filename, errstr(elm))
+
+def elm_name(elm):
+    if elm is not None:
+        name = "'%s'" % elm.attrib['class']
+        if 'id' in elm.attrib:
+            name += " '%s'" % elm.attrib['id']
+        return name
+    return None
 
 def err(filename, elm, msg):
     global errors, errexists
 
-    if elm == None:
-        prefix = "%s:" % filename
-    else:
-        prefix = "%s:%s" % (filename, errstr(elm))
+    prefix = elm_prefix(filename, elm)
 
     if prefix in logprefixes:
         errexists += 1
         return
 
     errors += 1
-    msg = "%s ERROR: %s" % (prefix, msg)
+    msg = "%s ERROR: %s %s" % (prefix, elm_name(elm), msg)
     print(msg.encode('ascii', 'ignore'), file=logfile)
 
 
@@ -172,7 +182,7 @@ def warn(filename, elm, msg):
     if Wnone:
         return
 
-    prefix = "%s:%s" % (filename, errstr(elm))
+    prefix = elm_prefix(filename, elm)
     if prefix in logprefixes:
         if Werror:
             errexists += 1
@@ -185,7 +195,7 @@ def warn(filename, elm, msg):
     else:
         warnings += 1
 
-    msg = "%s WARNING: %s" % (prefix,  msg)
+    msg = "%s WARNING: %s %s" % (prefix, elm_name(elm), msg)
     print(msg.encode('ascii', 'ignore'), file=logfile)
 
 
@@ -195,9 +205,9 @@ def check_objects(filename, elm, objects, target):
     """
     length = len(list(objects))
     if length == 0:
-        err(filename, elm, "use of undeclared target '%s'" % target)
+        err(filename, elm, "uses of undeclared target '%s'" % target)
     elif length > 1:
-        err(filename, elm, "sevral targets are named '%s'" % target)
+        err(filename, elm, "several targets are named '%s'" % target)
 
 def check_props(filename, root, props):
     """
@@ -248,27 +258,25 @@ def check_a11y_relation(filename, root):
             check_props(filename, root, properties)
             if len(properties) > 1:
                 lines = ', '.join([str(p.sourceline) for p in properties])
-                err(filename, obj, "too many sub-elements"
+                err(filename, obj, "has too many sub-elements"
                     ", expected single <property name='mnemonic_widgets'>"
                     ": lines %s" % lines)
                 continue
             if len(properties) == 1:
                 continue
-            if 'id' in obj.attrib:
-                name = " '%s'" % obj.attrib['id']
-            else:
-                name = ""
-            warn(filename, obj, "label%s missing sub-element"
+            warn(filename, obj, "missing sub-element"
                  ", expected single <property name='mnemonic_widgets'> or "
-                 "one or more <relation type='label-for'>" % name)
+                 "one or more <relation type='label-for'>")
             continue
+
+        # Not a label
 
         # Case 1: has a <child internal-child="accessible"> sub-element
         children = obj.findall("child[@internal-child='accessible']")
         if children:
             if len(children) > 1:
                 lines = ', '.join([str(c.sourceline) for c in children])
-                err(filename, obj, "too many sub-elements"
+                err(filename, obj, "has too many sub-elements"
                     ", expected single <child internal-child='accessible'>"
                     ": lines %s" % lines)
             continue
@@ -294,7 +302,7 @@ def check_a11y_relation(filename, root):
                 continue
             if len(labelfor) > 1:
                 lines = ', '.join([str(l.sourceline) for l in labelfor])
-                err(filename, obj, "too many elements"
+                err(filename, obj, "has too many elements"
                     ", expected single <relation type='label-for' target='%s'>"
                     ": lines %s" % (oid, lines))
                 continue
@@ -306,16 +314,13 @@ def check_a11y_relation(filename, root):
                 continue
             if len(props) > 1:
                 lines = ', '.join([str(p.sourceline) for p in props])
-                err(filename, obj, "'%s' has multiple mnemonic_widget:"
-                    " lines %s" % (obj.attrib['class'], lines))
-                err(filename, obj, "too many elements"
+                err(filename, obj, "has multiple mnemonic_widget:"
+                    " lines %s" % (lines))
+                err(filename, obj, "has too many elements"
                     ", expected single "
                     "<property name='mnemonic_widgets'>%s</property>"
                     ": lines %s" % (oid, lines))
                 continue
-
-            warn(filename, obj, "widget '%s' '%s' has no relation" % (obj.attrib['class'], oid))
-            continue
 
         # Check for standard GtkButtons
         if obj.attrib['class'] == "GtkButton":
@@ -328,8 +333,7 @@ def check_a11y_relation(filename, root):
                     # And it's a standard button
                     continue
 
-        klass = obj.attrib['class']
-        warn(filename, obj, "'%s' is missing some a11y love" % klass)
+        warn(filename, obj, "has no accessibility relation")
 
 
 def usage():
