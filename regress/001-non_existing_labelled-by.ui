@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.20.0 -->
 <child>
-	<object class="GtkButton" id="delimpb">
+	<object class="GtkEntry" id="delimpb">
 		<accessibility>
 			<relation type="labelled-by" target="character"/>
 		</accessibility>

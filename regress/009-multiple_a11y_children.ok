@@ -1,2 +1,1 @@
-009-multiple_a11y_children.ui:GtkComboBox[@id='type_log_1'] ERROR: too many sub-elements, expected single <child internal-child='accessible'>: lines 4, 8
-1 error generated
+0 new error (1 suppressed)

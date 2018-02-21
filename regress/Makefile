@@ -18,7 +18,7 @@ $(TESTS):
 	$(GLA11Y) $@.ui | diff -u $@.ok /dev/stdin
 
 $(LOGTESTS):
-	$(GLA11Y) -l regress.log $@.ui | diff -u $@.ok /dev/stdin
+	$(GLA11Y) -s $@.suppr $@.ui | diff -u $@.ok /dev/stdin
 
 .PHONY: all $(TESTS) $(LOGTESTS)
 

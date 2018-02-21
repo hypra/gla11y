@@ -1,2 +1,2 @@
-000-multiple_a11y_children.ui:3 ERROR: too many sub-elements, expected single <child internal-child='accessible'>: lines 4, 8
-1 error generated
+000-multiple_a11y_children.ui:3 ERROR: 'GtkComboBox' 'typelb1' has too many sub-elements, expected single <child internal-child='accessible'>: lines 4, 8
+1 new error

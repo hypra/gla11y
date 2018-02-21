@@ -1,2 +1,2 @@
-005-broken_mnemonic_widget.ui:11 ERROR: use of undeclared target 'custom2'
-1 error generated
+005-broken_mnemonic_widget.ui:11 ERROR: uses undeclared target 'custom2'
+1 new error

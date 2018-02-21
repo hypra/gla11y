@@ -1,3 +1,2 @@
-003-multiple_mnemonic_widget.ui:15 ERROR: 'GtkComboBoxText' has multiple mnemonic_widget: lines 6, 11
-003-multiple_mnemonic_widget.ui:15 ERROR: too many elements, expected single <property name='mnemonic_widgets'>custom</property>: lines 6, 11
-2 errors generated
+003-multiple_mnemonic_widget.ui:15 WARNING: 'GtkComboBoxText' 'custom' has multiple mnemonic_widget: lines 6, 11
+1 new warning
