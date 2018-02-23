@@ -187,7 +187,7 @@ def err(filename, elm, msgtype, msg):
     suppr = '%s %s' % (prefix, msgtype)
     suppr = suppr.encode('ascii', 'ignore')
 
-    if gen_supprfile is not None:
+    if gen_supprfile is not None and msgtype is not none:
         print(suppr, file=gen_supprfile)
 
     if suppr in suppressions:
@@ -395,7 +395,6 @@ def main():
     gen_suppr = None
     suppr = None
     ignore = False
-    append = False
     widgets = []
 
     for o, a in opts:
@@ -432,7 +431,7 @@ def main():
                 suppressions.append(prefix)
             supprfile.close()
         except IOError:
-            err(suppr, None, "", "unable to read suppression file")
+            warn(suppr, None, None, "unable to read suppression file")
 
     if gen_suppr is not None:
         gen_supprfile = open(gen_suppr, 'w')
@@ -444,16 +443,16 @@ def main():
         try:
             tree = ET.parse(filename)
         except ET.ParseError:
-            err(filename, None, "", "malformatted xml file")
+            err(filename, None, "parse", "malformatted xml file")
         except IOError:
-            err(filename, None, "", "unable to read file")
+            err(filename, None, None, "unable to read file")
 
         try:
             check_a11y_relation(filename, tree.getroot())
         except Exception as error:
             import traceback
             traceback.print_exc()
-            err(filename, None, "", "error parsing file")
+            err(filename, None, "parse", "error parsing file")
 
     if errors > 0 or errexists > 0:
         estr = "%s new error%s" % (errors, 's' if errors > 1 else '')
