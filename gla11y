@@ -14,7 +14,7 @@
 # WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-#
+
 # Take LibreOffice (glade) .ui files and check for non accessible widgets
 
 from __future__ import print_function
@@ -135,6 +135,7 @@ def errpath(filename, elm):
         path += elm.attrib['class']
     oid = elm.attrib.get('id')
     if oid is not None:
+        oid = oid.encode('ascii','ignore').decode('ascii')
         path += "[@id='%s']" % oid
     elm = elm.getparent()
     while elm is not None:
@@ -173,9 +174,27 @@ def elm_name(elm):
         if 'class' in elm.attrib:
             name = "'%s' " % elm.attrib['class']
         if 'id' in elm.attrib:
-            name += "'%s' " % elm.attrib['id']
+            id = elm.attrib['id'].encode('ascii','ignore').decode('ascii')
+            name += "'%s' " % id
         return name
     return ""
+
+def elm_suppr(filename, elm, msgtype):
+    """
+    Return the prefix to be displayed to the user and the suppression line for
+    the warning type "msgtype" for element "elm"
+    """
+    prefix = errpath(filename, elm)
+    suppr = '%s %s' % (prefix, msgtype)
+
+    if gen_supprfile is not None and msgtype is not None:
+        print(suppr, file=gen_supprfile)
+
+    if not pflag:
+        # Use user-friendly line numbers
+        prefix = elm_prefix(filename, elm)
+
+    return (prefix, suppr)
 
 def err(filename, elm, msgtype, msg):
     """
@@ -183,25 +202,16 @@ def err(filename, elm, msgtype, msg):
     """
     global errors, errexists, pflag
 
-    prefix = errpath(filename, elm)
-    suppr = '%s %s' % (prefix, msgtype)
-    suppr = suppr.encode('ascii', 'ignore')
-
-    if gen_supprfile is not None and msgtype is not none:
-        print(suppr, file=gen_supprfile)
+    (prefix, suppr) = elm_suppr(filename, elm, msgtype)
 
     if suppr in suppressions:
         # Suppressed
         errexists += 1
         return
 
-    if not pflag:
-        # Use user-friendly line numbers
-        prefix = elm_prefix(filename, elm)
-
     errors += 1
     msg = "%s ERROR: %s%s" % (prefix, elm_name(elm), msg)
-    print(msg.encode('ascii', 'ignore'))
+    print(msg)
 
 
 def warn(filename, elm, msgtype, msg):
@@ -213,13 +223,7 @@ def warn(filename, elm, msgtype, msg):
     if Wnone:
         return
 
-    prefix = errpath(filename, elm)
-    suppr = '%s %s' % (prefix, msgtype)
-    suppr = suppr.encode('ascii', 'ignore')
-
-    if gen_supprfile is not None:
-        print(suppr, file=gen_supprfile)
-
+    (prefix, suppr) = elm_suppr(filename, elm, msgtype)
     if suppr in suppressions:
         # Suppressed
         if Werror:
@@ -233,12 +237,8 @@ def warn(filename, elm, msgtype, msg):
     else:
         warnings += 1
 
-    if not pflag:
-        # Use user-friendly line numbers
-        prefix = elm_prefix(filename, elm)
-
     msg = "%s WARNING: %s%s" % (prefix, elm_name(elm), msg)
-    print(msg.encode('ascii', 'ignore'))
+    print(msg)
 
 
 def check_objects(filename, elm, objects, target):
@@ -371,7 +371,7 @@ def check_a11y_relation(filename, root):
                     # And it's a standard button
                     continue
 
-        warn(filename, obj, "no-labelled-by", "has no accessibility relation")
+        warn(filename, obj, "no-labelled-by", "has no accessibility label")
 
 
 def usage():
@@ -427,7 +427,7 @@ def main():
         try:
             supprfile = open(suppr, 'r')
             for line in supprfile.readlines():
-                prefix = line.decode('ascii').rstrip()
+                prefix = line.rstrip()
                 suppressions.append(prefix)
             supprfile.close()
         except IOError:
@@ -457,14 +457,14 @@ def main():
     if errors > 0 or errexists > 0:
         estr = "%s new error%s" % (errors, 's' if errors > 1 else '')
         if errexists > 0:
-            estr += " (%s suppressed)" % errexists
+            estr += " (%s suppressed by %s)" % (errexists, suppr)
         print(estr)
 
     if warnings > 0 or warnexists > 0:
         wstr = "%s new warning%s" % (warnings,
                                            's' if warnings > 1 else '')
         if warnexists > 0:
-            wstr += " (%s suppressed)" % warnexists
+            wstr += " (%s suppressed by %s)" % (warnexists, suppr)
         print(wstr)
 
     if errors > 0:
