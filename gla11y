@@ -22,7 +22,13 @@ from __future__ import print_function
 import os
 import sys
 import getopt
-import lxml.etree as ET
+try:
+    import lxml.etree as ET
+    lxml = True
+except ImportError:
+    import xml.etree.ElementTree as ET
+    lxml = False
+
 
 widgets_ignored = [
     'GtkFrame',
@@ -114,7 +120,7 @@ standard_gtkbuttons = [
 ]
 
 progname = os.path.basename(sys.argv[0])
-suppressions = []
+suppressions = {}
 gen_supprfile = None
 pflag = False
 Werror = False
@@ -124,7 +130,37 @@ errexists = 0
 warnings = 0
 warnexists = 0
 
-def errpath(filename, elm):
+def step_elm(elm):
+    """
+    Return the XML class path step corresponding to elm.
+    This can be empty if the elm does not have any class or id.
+    """
+    step = elm.attrib.get('class')
+    if step is None:
+        step = ""
+    oid = elm.attrib.get('id')
+    if oid is not None:
+        oid = oid.encode('ascii','ignore').decode('ascii')
+        step += "[@id='%s']" % oid
+    if len(step) > 0:
+        step += '/'
+    return step
+
+def find_elm(root, elm):
+    """
+    Return the XML class path of the element from the given root.
+    This is the slow version used when getparent is not available.
+    """
+    if root == elm:
+        return ""
+    for o in root:
+        path = find_elm(o, elm)
+        if path is not None:
+            step = step_elm(o)
+            return step + path
+    return None
+
+def errpath(filename, tree, elm):
     """
     Return the XML class path of the element
     """
@@ -137,15 +173,14 @@ def errpath(filename, elm):
     if oid is not None:
         oid = oid.encode('ascii','ignore').decode('ascii')
         path += "[@id='%s']" % oid
-    elm = elm.getparent()
-    while elm is not None:
-        klass = elm.attrib.get('class')
-        oid = elm.attrib.get('id')
-        if oid is not None:
-            klass += "[@id='%s']" % oid
-        if klass is not None:
-            path = klass + '/' + path
+    if lxml:
         elm = elm.getparent()
+        while elm is not None:
+            step = step_elm(elm)
+            path = step + path
+            elm = elm.getparent()
+    else:
+        path = find_elm(tree.getroot(), elm)[:-1]
     path = filename + ':' + path
     return path
 
@@ -160,7 +195,7 @@ def elm_prefix(filename, elm):
     """
     Return the display prefix of the element
     """
-    if elm == None:
+    if elm == None or not lxml:
         return "%s:" % filename
     else:
         return "%s:%s" % (filename, errstr(elm))
@@ -179,15 +214,18 @@ def elm_name(elm):
         return name
     return ""
 
-def elm_suppr(filename, elm, msgtype):
+def elm_suppr(filename, tree, elm, msgtype):
     """
     Return the prefix to be displayed to the user and the suppression line for
     the warning type "msgtype" for element "elm"
     """
-    prefix = errpath(filename, elm)
+    global gen_suppr, gen_supprfile, pflag
+    prefix = errpath(filename, tree, elm)
     suppr = '%s %s' % (prefix, msgtype)
 
-    if gen_supprfile is not None and msgtype is not None:
+    if gen_suppr is not None and msgtype is not None:
+        if gen_supprfile is None:
+            gen_supprfile = open(gen_suppr, 'w')
         print(suppr, file=gen_supprfile)
 
     if not pflag:
@@ -196,13 +234,13 @@ def elm_suppr(filename, elm, msgtype):
 
     return (prefix, suppr)
 
-def err(filename, elm, msgtype, msg):
+def err(filename, tree, elm, msgtype, msg):
     """
     Emit an error for an element
     """
     global errors, errexists, pflag
 
-    (prefix, suppr) = elm_suppr(filename, elm, msgtype)
+    (prefix, suppr) = elm_suppr(filename, tree, elm, msgtype)
 
     if suppr in suppressions:
         # Suppressed
@@ -214,7 +252,7 @@ def err(filename, elm, msgtype, msg):
     print(msg)
 
 
-def warn(filename, elm, msgtype, msg):
+def warn(filename, tree, elm, msgtype, msg):
     """
     Emit a warning for an element
     """
@@ -223,7 +261,7 @@ def warn(filename, elm, msgtype, msg):
     if Wnone:
         return
 
-    (prefix, suppr) = elm_suppr(filename, elm, msgtype)
+    (prefix, suppr) = elm_suppr(filename, tree, elm, msgtype)
     if suppr in suppressions:
         # Suppressed
         if Werror:
@@ -241,53 +279,63 @@ def warn(filename, elm, msgtype, msg):
     print(msg)
 
 
-def check_objects(filename, elm, objects, target):
+def check_objects(filename, tree, elm, objects, target):
     """
     Check that objects contains exactly one object
     """
     length = len(list(objects))
     if length == 0:
-        err(filename, elm, "undeclared-target", "uses undeclared target '%s'" % target)
+        err(filename, tree, elm, "undeclared-target", "uses undeclared target '%s'" % target)
     elif length > 1:
-        err(filename, elm, "multiple-target", "several targets are named '%s'" % target)
+        err(filename, tree, elm, "multiple-target", "several targets are named '%s'" % target)
 
-def check_props(filename, root, props):
+def check_props(filename, tree, root, props):
     """
     Check the given list of relation properties
     """
     for prop in props:
         objects = root.iterfind(".//object[@id='%s']" % prop.text)
-        check_objects(filename, prop, objects, prop.text)
+        check_objects(filename, tree, prop, objects, prop.text)
 
-def check_rels(filename, root, rels):
+def check_rels(filename, tree, root, rels):
     """
     Check the given list of relations
     """
     for rel in rels:
         target = rel.attrib['target']
         targets = root.iterfind(".//object[@id='%s']" % target)
-        check_objects(filename, rel, targets, target)
+        check_objects(filename, tree, rel, targets, target)
 
-def check_a11y_relation(filename, root):
+def elms_lines(elms):
+    """
+    Return the list of lines for the given elements.
+    """
+    if lxml:
+        return ": lines " + ', '.join([str(l.sourceline) for l in elms])
+    else:
+        return ""
+
+def check_a11y_relation(filename, tree):
     """
     Emit an error message if any of the 'object' elements of the XML
     document represented by `root' doesn't comply with Accessibility
     rules.
     """
     global widgets_ignored
+    root = tree.getroot()
 
     for obj in root.iter('object'):
         if obj.attrib['class'] in widgets_ignored:
             continue
 
         label_for = obj.findall("accessibility/relation[@type='label-for']")
-        check_rels(filename, root, label_for)
+        check_rels(filename, tree, root, label_for)
 
         labelled_by = obj.findall("accessibility/relation[@type='labelled-by']")
-        check_rels(filename, root, labelled_by)
+        check_rels(filename, tree, root, labelled_by)
 
         member_of = obj.findall("accessibility/relation[@type='member-of']")
-        check_rels(filename, root, member_of)
+        check_rels(filename, tree, root, member_of)
 
         if obj.attrib['class'] == 'GtkLabel':
             # Case 0: A 'GtkLabel' must contain one or more "label-for"
@@ -297,16 +345,15 @@ def check_a11y_relation(filename, root):
 
             # ...a single "mnemonic_widget"
             properties = obj.findall("property[@name='mnemonic_widget']")
-            check_props(filename, root, properties)
+            check_props(filename, tree, root, properties)
             if len(properties) > 1:
-                lines = ', '.join([str(p.sourceline) for p in properties])
-                err(filename, obj, "multiple-mnemonic", "has too many sub-elements"
+                err(filename, tree, obj, "multiple-mnemonic", "has too many sub-elements"
                     ", expected single <property name='mnemonic_widgets'>"
-                    ": lines %s" % lines)
+                    "%s" % elm_lines(properties))
                 continue
             if len(properties) == 1:
                 continue
-            warn(filename, obj, "no-label-for", "missing sub-element"
+            warn(filename, tree, obj, "no-label-for", "missing sub-element"
                  ", expected single <property name='mnemonic_widgets'> or "
                  "one or more <relation type='label-for'>")
             continue
@@ -317,10 +364,9 @@ def check_a11y_relation(filename, root):
         children = obj.findall("child[@internal-child='accessible']")
         if children:
             if len(children) > 1:
-                lines = ', '.join([str(c.sourceline) for c in children])
-                err(filename, obj, "multiple-accessible", "has too many sub-elements"
+                err(filename, tree, obj, "multiple-accessible", "has too many sub-elements"
                     ", expected single <child internal-child='accessible'>"
-                    ": lines %s" % lines)
+                    "%s" % elm_lines(children))
             continue
 
         # Case 2: has an <accessibility> sub-element with a "labelled-by"
@@ -343,10 +389,9 @@ def check_a11y_relation(filename, root):
             if len(labelfor) == 1:
                 continue
             if len(labelfor) > 1:
-                lines = ', '.join([str(l.sourceline) for l in labelfor])
-                err(filename, obj, "multiple-label-for", "has too many elements"
+                err(filename, tree, obj, "multiple-label-for", "has too many elements"
                     ", expected single <relation type='label-for' target='%s'>"
-                    ": lines %s" % (oid, lines))
+                    "%s" % (oid, elm_lines(labelfor)))
                 continue
 
             # ...referenced by a single "mnemonic_widget"
@@ -355,23 +400,22 @@ def check_a11y_relation(filename, root):
             if len(props) == 1:
                 continue
             if len(props) > 1:
-                lines = ', '.join([str(p.sourceline) for p in props])
-                warn(filename, obj, "multiple-mnemonic", "has multiple mnemonic_widget:"
-                    " lines %s" % (lines))
+                warn(filename, tree, obj, "multiple-mnemonic", "has multiple mnemonic_widget:"
+                    " lines %s" % elms_lines(props))
                 continue
 
         # Check for standard GtkButtons
         if obj.attrib['class'] == "GtkButton":
             labels = obj.findall("property[@name='label']")
             if len(labels) > 1:
-                err(filename, obj, "multiple-label", "has multiple label properties")
+                err(filename, tree, obj, "multiple-label", "has multiple label properties")
             if len(labels) == 1:
                 # Has a <property name="label">
                 if labels[0].text in standard_gtkbuttons:
                     # And it's a standard button
                     continue
 
-        warn(filename, obj, "no-labelled-by", "has no accessibility label")
+        warn(filename, tree, obj, "no-labelled-by", "has no accessibility label")
 
 
 def usage():
@@ -385,7 +429,7 @@ def usage():
 
 
 def main():
-    global pflag, Werror, Wnone, gen_supprfile, suppressions, errors, widgets_ignored
+    global pflag, Werror, Wnone, gen_suppr, gen_supprfile, suppressions, errors, widgets_ignored
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "W:piIg:s:")
@@ -428,31 +472,27 @@ def main():
             supprfile = open(suppr, 'r')
             for line in supprfile.readlines():
                 prefix = line.rstrip()
-                suppressions.append(prefix)
+                suppressions[prefix] = True
             supprfile.close()
         except IOError:
-            warn(suppr, None, None, "unable to read suppression file")
-
-    if gen_suppr is not None:
-        gen_supprfile = open(gen_suppr, 'w')
-
-    if not args:
-        sys.exit("%s: no input files" % progname)
+            pass
 
     for filename in args:
         try:
             tree = ET.parse(filename)
         except ET.ParseError:
-            err(filename, None, "parse", "malformatted xml file")
+            err(filename, None, None, "parse", "malformatted xml file")
+            continue
         except IOError:
-            err(filename, None, None, "unable to read file")
+            err(filename, None, None, None, "unable to read file")
+            continue
 
         try:
-            check_a11y_relation(filename, tree.getroot())
+            check_a11y_relation(filename, tree)
         except Exception as error:
             import traceback
             traceback.print_exc()
-            err(filename, None, "parse", "error parsing file")
+            err(filename, None, None, "parse", "error parsing file")
 
     if errors > 0 or errexists > 0:
         estr = "%s new error%s" % (errors, 's' if errors > 1 else '')
