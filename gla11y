@@ -282,22 +282,22 @@ def check_objects(filename, tree, elm, objects, target):
     elif length > 1:
         err(filename, tree, elm, "multiple-target", "several targets are named '%s'" % target)
 
-def check_props(filename, tree, root, props):
+def check_props(filename, tree, root, elm, props):
     """
     Check the given list of relation properties
     """
     for prop in props:
         objects = root.iterfind(".//object[@id='%s']" % prop.text)
-        check_objects(filename, tree, prop, objects, prop.text)
+        check_objects(filename, tree, elm, objects, prop.text)
 
-def check_rels(filename, tree, root, rels):
+def check_rels(filename, tree, root, elm, rels):
     """
     Check the given list of relations
     """
     for rel in rels:
         target = rel.attrib['target']
         targets = root.iterfind(".//object[@id='%s']" % target)
-        check_objects(filename, tree, rel, targets, target)
+        check_objects(filename, tree, elm, targets, target)
 
 def elms_lines(elms):
     """
@@ -322,13 +322,13 @@ def check_a11y_relation(filename, tree):
             continue
 
         label_for = obj.findall("accessibility/relation[@type='label-for']")
-        check_rels(filename, tree, root, label_for)
+        check_rels(filename, tree, root, obj, label_for)
 
         labelled_by = obj.findall("accessibility/relation[@type='labelled-by']")
-        check_rels(filename, tree, root, labelled_by)
+        check_rels(filename, tree, root, obj, labelled_by)
 
         member_of = obj.findall("accessibility/relation[@type='member-of']")
-        check_rels(filename, tree, root, member_of)
+        check_rels(filename, tree, root, obj, member_of)
 
         if obj.attrib['class'] == 'GtkLabel':
             # Case 0: A 'GtkLabel' must contain one or more "label-for"
@@ -338,7 +338,7 @@ def check_a11y_relation(filename, tree):
 
             # ...a single "mnemonic_widget"
             properties = obj.findall("property[@name='mnemonic_widget']")
-            check_props(filename, tree, root, properties)
+            check_props(filename, tree, root, obj, properties)
             if len(properties) > 1:
                 err(filename, tree, obj, "multiple-mnemonic", "has too many sub-elements"
                     ", expected single <property name='mnemonic_widgets'>"
