@@ -184,13 +184,6 @@ def errpath(filename, tree, elm):
     path = filename + ':' + path
     return path
 
-def errstr(elm):
-    """
-    Return the line number of the element
-    """
-
-    return str(elm.sourceline)
-
 def elm_prefix(filename, elm):
     """
     Return the display prefix of the element
@@ -198,7 +191,7 @@ def elm_prefix(filename, elm):
     if elm == None or not lxml:
         return "%s:" % filename
     else:
-        return "%s:%s" % (filename, errstr(elm))
+        return "%s:%u" % (filename, elm.sourceline)
 
 def elm_name(elm):
     """
