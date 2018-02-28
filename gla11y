@@ -95,6 +95,8 @@ widgets_ignored = [
     'sfxlo-DropdownBox',
     'sfxlo-OptionalBox',
 
+    'vcllo-PrintPreviewWindow',
+
     'AtkObject',
 ]
 
@@ -121,7 +123,9 @@ standard_gtkbuttons = [
 
 progname = os.path.basename(sys.argv[0])
 suppressions = {}
+gen_suppr = None
 gen_supprfile = None
+outfile = None
 pflag = False
 Werror = False
 Wnone = False
@@ -213,13 +217,19 @@ def elm_suppr(filename, tree, elm, msgtype):
     the warning type "msgtype" for element "elm"
     """
     global gen_suppr, gen_supprfile, pflag
-    prefix = errpath(filename, tree, elm)
-    suppr = '%s %s' % (prefix, msgtype)
 
-    if gen_suppr is not None and msgtype is not None:
-        if gen_supprfile is None:
-            gen_supprfile = open(gen_suppr, 'w')
-        print(suppr, file=gen_supprfile)
+    if suppressions or gen_suppr is not None or pflag:
+        prefix = errpath(filename, tree, elm)
+
+    if suppressions or gen_suppr is not None:
+        suppr = '%s %s' % (prefix, msgtype)
+
+        if gen_suppr is not None and msgtype is not None:
+            if gen_supprfile is None:
+                gen_supprfile = open(gen_suppr, 'w')
+            print(suppr, file=gen_supprfile)
+    else:
+        suppr = None
 
     if not pflag:
         # Use user-friendly line numbers
@@ -231,7 +241,7 @@ def err(filename, tree, elm, msgtype, msg):
     """
     Emit an error for an element
     """
-    global errors, errexists, pflag
+    global errors, errexists
 
     (prefix, suppr) = elm_suppr(filename, tree, elm, msgtype)
 
@@ -243,13 +253,15 @@ def err(filename, tree, elm, msgtype, msg):
     errors += 1
     msg = "%s ERROR: %s%s" % (prefix, elm_name(elm), msg)
     print(msg)
+    if outfile is not None:
+        print(msg, file=outfile)
 
 
 def warn(filename, tree, elm, msgtype, msg):
     """
     Emit a warning for an element
     """
-    global Werror, Wnone, errors, errexists, warnings, warnexists, pflag
+    global Werror, Wnone, errors, errexists, warnings, warnexists
 
     if Wnone:
         return
@@ -270,6 +282,8 @@ def warn(filename, tree, elm, msgtype, msg):
 
     msg = "%s WARNING: %s%s" % (prefix, elm_name(elm), msg)
     print(msg)
+    if outfile is not None:
+        print(msg, file=outfile)
 
 
 def check_objects(filename, tree, elm, objects, target):
@@ -342,7 +356,7 @@ def check_a11y_relation(filename, tree):
             if len(properties) > 1:
                 err(filename, tree, obj, "multiple-mnemonic", "has too many sub-elements"
                     ", expected single <property name='mnemonic_widgets'>"
-                    "%s" % elm_lines(properties))
+                    "%s" % elms_lines(properties))
                 continue
             if len(properties) == 1:
                 continue
@@ -359,7 +373,7 @@ def check_a11y_relation(filename, tree):
             if len(children) > 1:
                 err(filename, tree, obj, "multiple-accessible", "has too many sub-elements"
                     ", expected single <child internal-child='accessible'>"
-                    "%s" % elm_lines(children))
+                    "%s" % elms_lines(children))
             continue
 
         # Case 2: has an <accessibility> sub-element with a "labelled-by"
@@ -412,12 +426,13 @@ def check_a11y_relation(filename, tree):
 
 
 def usage():
-    print("%s [-W error|none] [-p] [-g SUPPR_FILE] [-s SUPPR_FILE] [-i WIDGET1,WIDGET2[,...]] [file ...]" % progname,
+    print("%s [-W error|none] [-p] [-g SUPPR_FILE] [-s SUPPR_FILE] [-i WIDGET1,WIDGET2[,...]] [-o LOG_FILE] [file ...]" % progname,
           file=sys.stderr)
     print("  -p print XML class path instead of line number");
     print("  -g Generate suppression file SUPPR_FILE");
     print("  -s Suppress warnings given by file SUPPR_FILE");
     print("  -i Ignore warnings for widgets of a given class");
+    print("  -o Also prints errors and warnings to given file");
     sys.exit(2)
 
 
@@ -425,12 +440,12 @@ def main():
     global pflag, Werror, Wnone, gen_suppr, gen_supprfile, suppressions, errors, widgets_ignored
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "W:piIg:s:")
+        opts, args = getopt.getopt(sys.argv[1:], "W:piIg:s:o:")
     except getopt.GetoptError:
         usage()
 
-    gen_suppr = None
     suppr = None
+    out = None
     ignore = False
     widgets = []
 
@@ -450,6 +465,8 @@ def main():
             gen_suppr = a
         elif o == "-s":
             suppr = a
+        elif o == "-o":
+            out = a
 
     if ignore and widgets:
         usage()
@@ -469,6 +486,9 @@ def main():
             supprfile.close()
         except IOError:
             pass
+
+    if out is not None:
+        outfile = open(out, 'a')
 
     for filename in args:
         try:
@@ -509,3 +529,5 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         pass
+
+# vim: set shiftwidth=4 softtabstop=4 expandtab:
