@@ -437,7 +437,7 @@ def usage():
 
 
 def main():
-    global pflag, Werror, Wnone, gen_suppr, gen_supprfile, suppressions, errors, widgets_ignored
+    global pflag, Werror, Wnone, gen_suppr, gen_supprfile, suppressions, errors, widgets_ignored, outfile
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "W:piIg:s:o:L:")
