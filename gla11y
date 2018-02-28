@@ -38,9 +38,6 @@ widgets_ignored = [
     'GtkMessageDialog',
     'GtkNotebook',
 
-    # a lot of false positives there
-    'GtkButton',
-
     # Invisible actions
     'GtkAlignment',
     'GtkAdjustment',
@@ -446,6 +443,17 @@ def check_a11y_relation(filename, tree):
                 if labels[0].text in standard_gtkbuttons:
                     # And it's a standard button
                     continue
+                # TODO: warn only if gtklabel not far
+                continue
+
+        if obj.attrib['class'] == "GtkImage":
+            uses = tree.iterfind("//object/property[@name='image']")
+            uses = [u for u in uses if u.text == oid]
+            if len(uses) > 0:
+                # This image is just used by another element, don't warn
+                # about the image itself, we probably want the warning on
+                # the element instead.
+                continue
 
         warn(filename, tree, obj, "no-labelled-by", "has no accessibility label")
 
