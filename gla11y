@@ -440,12 +440,13 @@ def main():
     global pflag, Werror, Wnone, gen_suppr, gen_supprfile, suppressions, errors, widgets_ignored
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "W:piIg:s:o:")
+        opts, args = getopt.getopt(sys.argv[1:], "W:piIg:s:o:L:")
     except getopt.GetoptError:
         usage()
 
     suppr = None
     out = None
+    filelist = None
     ignore = False
     widgets = []
 
@@ -467,6 +468,8 @@ def main():
             suppr = a
         elif o == "-o":
             out = a
+        elif o == "-L":
+            filelist = a
 
     if ignore and widgets:
         usage()
@@ -488,7 +491,18 @@ def main():
             pass
 
     if out is not None:
-        outfile = open(out, 'a')
+        outfile = open(out, 'w')
+
+    if filelist is not None:
+        try:
+            filelistfile = open(filelist, 'r')
+            for line in filelistfile.readlines():
+                line = line.strip()
+                if line:
+                    args += line.split(' ')
+            filelistfile.close()
+        except IOError:
+            err(filelist, None, None, "unable to read file list file")
 
     for filename in args:
         try:
@@ -520,7 +534,11 @@ def main():
             wstr += " (%s suppressed by %s)" % (warnexists, suppr)
         print(wstr)
 
-    if errors > 0:
+    if gen_supprfile is not None:
+        gen_supprfile.close()
+    if outfile is not None:
+        outfile.close()
+    if errors > 0 and gen_suppr is None:
         sys.exit(1)
 
 
