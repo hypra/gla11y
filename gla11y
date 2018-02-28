@@ -134,6 +134,23 @@ errexists = 0
 warnings = 0
 warnexists = 0
 
+def elm_parent(root, elm):
+    """
+    Return the parent of the element.
+    """
+    if lxml:
+        return elm.getparent()
+    else:
+        def find_parent(cur, elm):
+            for o in cur:
+                if o == elm:
+                    return cur
+                parent = find_parent(o, elm)
+                if parent is not None:
+                    return parent
+            return None
+        return find_parent(root, elm)
+
 def step_elm(elm):
     """
     Return the XML class path step corresponding to elm.
@@ -360,6 +377,14 @@ def check_a11y_relation(filename, tree):
                 continue
             if len(properties) == 1:
                 continue
+
+            parent = elm_parent(root, obj)
+            childtype = parent.attrib.get('type')
+            if parent.tag == 'child' and childtype == 'label' \
+                                      or childtype == 'tab':
+                # This is a frame or a notebook label
+                continue
+
             warn(filename, tree, obj, "no-label-for", "missing sub-element"
                  ", expected single <property name='mnemonic_widgets'> or "
                  "one or more <relation type='label-for'>")
