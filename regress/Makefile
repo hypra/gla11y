@@ -10,7 +10,7 @@ TESTS =		000-multiple_a11y_children \
 		007-multiple_label-for \
 		008-more_than_one_mnemonic_widget
 
-LOGTESTS =	009-multiple_a11y_children
+LOGTESTS =	100-multiple_a11y_children
 
 all: $(TESTS) $(LOGTESTS)
 
