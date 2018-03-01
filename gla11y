@@ -122,6 +122,7 @@ progname = os.path.basename(sys.argv[0])
 suppressions = {}
 gen_suppr = None
 gen_supprfile = None
+suppr_prefix = ""
 outfile = None
 pflag = False
 Werror = False
@@ -230,10 +231,12 @@ def elm_suppr(filename, tree, elm, msgtype):
     Return the prefix to be displayed to the user and the suppression line for
     the warning type "msgtype" for element "elm"
     """
-    global gen_suppr, gen_supprfile, pflag
+    global gen_suppr, gen_supprfile, suppr_prefix, pflag
 
     if suppressions or gen_suppr is not None or pflag:
         prefix = errpath(filename, tree, elm)
+        if prefix[0:len(suppr_prefix)] == suppr_prefix:
+            prefix = prefix[len(suppr_prefix):]
 
     if suppressions or gen_suppr is not None:
         suppr = '%s %s' % (prefix, msgtype)
@@ -248,6 +251,8 @@ def elm_suppr(filename, tree, elm, msgtype):
     if not pflag:
         # Use user-friendly line numbers
         prefix = elm_prefix(filename, elm)
+        if prefix[0:len(suppr_prefix)] == suppr_prefix:
+            prefix = prefix[len(suppr_prefix):]
 
     return (prefix, suppr)
 
@@ -470,10 +475,10 @@ def usage():
 
 
 def main():
-    global pflag, Werror, Wnone, gen_suppr, gen_supprfile, suppressions, errors, widgets_ignored, outfile
+    global pflag, Werror, Wnone, gen_suppr, gen_supprfile, suppressions, suppr_prefix, errors, widgets_ignored, outfile
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "W:piIg:s:o:L:")
+        opts, args = getopt.getopt(sys.argv[1:], "W:piIg:s:P:o:L:")
     except getopt.GetoptError:
         usage()
 
@@ -499,6 +504,8 @@ def main():
             gen_suppr = a
         elif o == "-s":
             suppr = a
+        elif o == "-P":
+            suppr_prefix = a
         elif o == "-o":
             out = a
         elif o == "-L":
