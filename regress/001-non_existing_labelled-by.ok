@@ -1,2 +1,2 @@
-001-non_existing_labelled-by.ui:6 ERROR: uses undeclared target 'character'
+001-non_existing_labelled-by.ui:4 ERROR: 'GtkEntry' 'delimpb' uses undeclared target 'character'
 1 new error
