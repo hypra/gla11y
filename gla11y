@@ -443,20 +443,33 @@ def check_a11y_relation(filename, tree):
                     "%s" % elms_lines(props))
                 continue
 
-        # Check for standard GtkButtons
+        # GtkButtons
         if obj.attrib['class'] == "GtkButton" or obj.attrib['class'] == "GtkToolButton" :
+
             labels = obj.findall("property[@name='label']")
             if len(labels) > 1:
                 err(filename, tree, obj, "multiple-label", "has multiple label properties")
             if len(labels) == 1:
                 # Has a <property name="label">
                 if labels[0].text in standard_gtkbuttons:
-                    # And it's a standard button
+                    # And it's a standard Ok/Cancel/etc. button
                     continue
                 # TODO: warn only if gtklabel not far
                 continue
-            # TODO: do not warn either if there is a <property name="tooltip_text" translatable="yes" context="numberingformatpage|add|tooltip_text">Add</property>
-            # or <property name="action_name">.uno:StyleUpdateByExample</property>
+
+            tooltips = obj.findall("property[@name='tooltip_text']")
+            if len(tooltips) > 1:
+                err(filename, tree, obj, "multiple-tooltip", "has multiple tooltip_text properties")
+            if len(tooltips) == 1:
+                # Has a <property name="tooltip_text">
+                continue
+
+            actions = obj.findall("property[@name='action_name']")
+            if len(actions) > 1:
+                err(filename, tree, obj, "multiple-action_name", "has multiple action_name properties")
+            if len(actions) == 1:
+                # Has a <property name="action_name">
+                continue
 
             # no label for a button, warn
 

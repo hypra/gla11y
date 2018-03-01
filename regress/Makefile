@@ -8,7 +8,10 @@ TESTS =		000-multiple_a11y_children \
 		005-broken_mnemonic_widget \
 		006-empty_GtkLabel \
 		007-multiple_label-for \
-		008-more_than_one_mnemonic_widget
+		008-more_than_one_mnemonic_widget \
+		009-missing_labelled-by-but-standard \
+		010-missing_labelled-by-but-tooltip \
+		011-missing_labelled-by-but-action_name
 
 LOGTESTS =	100-multiple_a11y_children
 
