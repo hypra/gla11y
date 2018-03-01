@@ -430,7 +430,7 @@ def check_a11y_relation(filename, tree):
             if len(labelfor) > 1:
                 err(filename, tree, obj, "multiple-label-for", "has too many elements"
                     ", expected single <relation type='label-for' target='%s'>"
-                    "%s" % (oid, elm_lines(labelfor)))
+                    "%s" % (oid, elms_lines(labelfor)))
                 continue
 
             # ...referenced by a single "mnemonic_widget"
@@ -439,8 +439,8 @@ def check_a11y_relation(filename, tree):
             if len(props) == 1:
                 continue
             if len(props) > 1:
-                warn(filename, tree, obj, "multiple-mnemonic", "has multiple mnemonic_widget:"
-                    " lines %s" % elms_lines(props))
+                warn(filename, tree, obj, "multiple-mnemonic", "has multiple mnemonic_widget"
+                    "%s" % elms_lines(props))
                 continue
 
         # Check for standard GtkButtons
