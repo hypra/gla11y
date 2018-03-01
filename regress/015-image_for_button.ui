@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.20.0 -->
+<child>
+	<object class="GtkImage" id="img">
+	</object>
+	<object class="GtkButton" id="ok">
+		<property name="label">my Ok</property>
+		<property name="image">img</property>
+	</object>
+</child>

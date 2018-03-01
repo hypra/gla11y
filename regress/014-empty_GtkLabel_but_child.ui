@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.20.0 -->
+<child internal-child="vbox">
+  <child type="label">
+  	<object class="GtkLabel" id="column">
+  	</object>
+  </child>
+  <child type="tab">
+  	<object class="GtkLabel" id="row">
+  	</object>
+  </child>
+</child>

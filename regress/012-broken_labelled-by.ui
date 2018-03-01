@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.20.0 -->
+<child internal-child="vbox">
+	<child>
+		<object class="GtkLabel" id="colsb1">
+		</object>
+	</child>
+  <child>
+  	<object class="GtkSpinButton" id="column">
+  		<accessibility>
+  			<relation type="labelled-by" target="colsb2"/>
+  		</accessibility>
+  	</object>
+  </child>
+</child>

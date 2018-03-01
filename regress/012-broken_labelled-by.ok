@@ -1,0 +1,4 @@
+012-broken_labelled-by.ui:5 WARNING: 'GtkLabel' 'colsb1' missing sub-element, expected single <property name='mnemonic_widgets'> or one or more <relation type='label-for'>
+012-broken_labelled-by.ui:9 ERROR: 'GtkSpinButton' 'column' uses undeclared target 'colsb2'
+1 new error
+1 new warning

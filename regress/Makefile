@@ -11,7 +11,11 @@ TESTS =		000-multiple_a11y_children \
 		008-more_than_one_mnemonic_widget \
 		009-missing_labelled-by-but-standard \
 		010-missing_labelled-by-but-tooltip \
-		011-missing_labelled-by-but-action_name
+		011-missing_labelled-by-but-action_name \
+		012-broken_labelled-by \
+		013-broken_member-of \
+		014-empty_GtkLabel_but_child \
+		015-image_for_button
 
 LOGTESTS =	100-multiple_a11y_children
 
