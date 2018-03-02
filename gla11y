@@ -154,6 +154,102 @@ def elm_parent(root, elm):
             return None
         return find_parent(root, elm)
 
+def elm_labelled_parent(root, elm):
+    """
+    Return the first labelled parent of the element, which can thus be used as
+    the root of widgets with common labelled context
+    """
+
+    def is_labelled_parent(elm):
+        """
+        Return whether this element is a labelled parent
+        """
+        if elm.attrib.get('class') == 'GtkFrame' or elm.attrib.get('class') == 'GtkNotebook':
+            children = elm.findall("child[@type='tab']") + elm.findall("child[@type='label']") 
+            if len(children) >= 1:
+                return True
+        return False
+
+    if lxml:
+        def find_labelled_parent(elm):
+            if is_labelled_parent(elm):
+                return elm
+            parent = elm.getparent()
+            if parent is None:
+                return None
+            return find_labelled_parent(parent)
+        return find_labelled_parent(elm.getparent())
+    else:
+        def find_labelled_parent(cur, elm):
+            if cur == elm:
+                # the target element is over there
+                return True
+            for o in cur:
+                parent = find_labelled_parent(o, elm)
+                if parent == True:
+                    # target element is over there, check ourself
+                    if is_labelled_parent(cur):
+                        # yes, and we are the first ancestor of the target element
+                        return cur
+                    else:
+                        # no, but target element is over there.
+                        return True
+                if parent != None:
+                    # the first ancestor of the target element was over there
+                    return parent
+            return None
+        parent = find_labelled_parent(root, elm)
+        if parent == True:
+            parent = None
+        return parent
+
+def orphaned_label(filename, tree, root, obj):
+    """
+    Check whether this label has no accessibility relation
+    """
+    label_for = obj.findall("accessibility/relation[@type='label-for']")
+    check_rels(filename, tree, root, obj, label_for)
+
+    # Case 0: A 'GtkLabel' must contain one or more "label-for"
+    # pointing to existing elements or...
+    if len(label_for) > 0:
+        return False
+
+    # ...a single "mnemonic_widget"
+    properties = obj.findall("property[@name='mnemonic_widget']")
+    check_props(filename, tree, root, obj, properties)
+    if len(properties) > 1:
+        # FIXME: shouldn't emit error ourself...
+        err(filename, tree, obj, "multiple-mnemonic", "has too many sub-elements"
+            ", expected single <property name='mnemonic_widgets'>"
+            "%s" % elms_lines(properties))
+        return False
+    if len(properties) == 1:
+        return False
+
+    parent = elm_parent(root, obj)
+    if parent is not None:
+        childtype = parent.attrib.get('type')
+        if parent.tag == 'child' and childtype == 'label' \
+                                  or childtype == 'tab':
+            # This is a frame or a notebook label
+            return False
+    return True
+
+def orphaned_labels(filename, tree, root, elm):
+    """
+    Check whether from root there exists a label with no accessibility relation
+    """
+    l = []
+    def look(obj):
+        if obj.attrib.get('class') == 'GtkLabel' and \
+            orphaned_label(filename, tree, root, obj):
+            l.append(obj)
+        for o in obj:
+            look(o)
+    look(elm)
+    return l
+
 def step_elm(elm):
     """
     Return the XML class path step corresponding to elm.
@@ -359,9 +455,6 @@ def check_a11y_relation(filename, tree):
         if obj.attrib['class'] in widgets_ignored:
             continue
 
-        label_for = obj.findall("accessibility/relation[@type='label-for']")
-        check_rels(filename, tree, root, obj, label_for)
-
         labelled_by = obj.findall("accessibility/relation[@type='labelled-by']")
         check_rels(filename, tree, root, obj, labelled_by)
 
@@ -369,32 +462,10 @@ def check_a11y_relation(filename, tree):
         check_rels(filename, tree, root, obj, member_of)
 
         if obj.attrib['class'] == 'GtkLabel':
-            # Case 0: A 'GtkLabel' must contain one or more "label-for"
-            # pointing to existing elements or...
-            if len(label_for) > 0:
-                continue
-
-            # ...a single "mnemonic_widget"
-            properties = obj.findall("property[@name='mnemonic_widget']")
-            check_props(filename, tree, root, obj, properties)
-            if len(properties) > 1:
-                err(filename, tree, obj, "multiple-mnemonic", "has too many sub-elements"
-                    ", expected single <property name='mnemonic_widgets'>"
-                    "%s" % elms_lines(properties))
-                continue
-            if len(properties) == 1:
-                continue
-
-            parent = elm_parent(root, obj)
-            childtype = parent.attrib.get('type')
-            if parent.tag == 'child' and childtype == 'label' \
-                                      or childtype == 'tab':
-                # This is a frame or a notebook label
-                continue
-
-            warn(filename, tree, obj, "no-label-for", "missing sub-element"
-                 ", expected single <property name='mnemonic_widgets'> or "
-                 "one or more <relation type='label-for'>")
+            if orphaned_label(filename, tree, root, obj):
+                warn(filename, tree, obj, "no-label-for", "missing sub-element"
+                     ", expected single <property name='mnemonic_widgets'> or "
+                     "one or more <relation type='label-for'>")
             continue
 
         # Not a label
@@ -486,8 +557,20 @@ def check_a11y_relation(filename, tree):
                 # the element instead.
                 continue
 
-        warn(filename, tree, obj, "no-labelled-by", "has no accessibility label")
+        # So, no label
 
+        label_root = elm_labelled_parent(root, obj)
+        if label_root is None:
+            # No labelled root, look for labels from the root
+            label_root = root
+
+        if len(orphaned_labels(filename, tree, root, label_root)) == 0:
+            # But no orphaned label either, so probably the labelled parent
+            # provides enough context.
+            continue
+
+        warn(filename, tree, obj, "no-labelled-by", "has no accessibility label while there are orphaned labels")
+        continue
 
 def usage():
     print("%s [-W error|none] [-p] [-g SUPPR_FILE] [-s SUPPR_FILE] [-i WIDGET1,WIDGET2[,...]] [-o LOG_FILE] [file ...]" % progname,

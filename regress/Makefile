@@ -15,7 +15,9 @@ TESTS =		000-multiple_a11y_children \
 		012-broken_labelled-by \
 		013-broken_member-of \
 		014-empty_GtkLabel_but_child \
-		015-image_for_button
+		015-image_for_button \
+		016-missing_labelled-by-but-labelled-frame \
+		017-missing_labelled-by-without-labelled-frame
 
 LOGTESTS =	100-multiple_a11y_children
 
