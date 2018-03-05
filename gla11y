@@ -26,6 +26,9 @@ try:
     import lxml.etree as ET
     lxml = True
 except ImportError:
+    if sys.version_info < (2,7):
+        print("gla11y needs lxml or python >= 2.7")
+        exit()
     import xml.etree.ElementTree as ET
     lxml = False
 
