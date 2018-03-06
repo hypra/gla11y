@@ -537,7 +537,7 @@ def check_a11y_relation(filename, tree):
 
         placeholders = obj.findall("property[@name='placeholder_text']")
         if len(placeholders) > 1:
-            err(filename, tree, obj, "multiple-tooltip", "has multiple placeholder_text properties")
+            err(filename, tree, obj, "multiple-placeholder", "has multiple placeholder_text properties")
         if len(placeholders) == 1:
             # Has a <property name="placeholder_text">
             continue
