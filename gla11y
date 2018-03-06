@@ -118,14 +118,6 @@ widgets_ignored = [
 # svxcorelo-SvxCheckListBox ?
 # svtlo-SvTreeListBox ?
 
-standard_gtkbuttons = [
-    'gtk-ok',
-    'gtk-cancel',
-    'gtk-help',
-    'gtk-close',
-    'gtk-revert-to-saved',
-]
-
 progname = os.path.basename(sys.argv[0])
 suppressions = {}
 gen_suppr = None
@@ -548,10 +540,6 @@ def check_a11y_relation(filename, tree):
                 err(filename, tree, obj, "multiple-label", "has multiple label properties")
             if len(labels) == 1:
                 # Has a <property name="label">
-                if labels[0].text in standard_gtkbuttons:
-                    # And it's a standard Ok/Cancel/etc. button
-                    continue
-                # TODO: warn only if gtklabel not far
                 continue
 
             actions = obj.findall("property[@name='action_name']")
