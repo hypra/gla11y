@@ -468,8 +468,11 @@ def check_a11y_relation(filename, tree):
         member_of = obj.findall("accessibility/relation[@type='member-of']")
         check_rels(filename, tree, root, obj, member_of)
 
-        if obj.attrib['class'] == 'GtkLabel':
+        klass = obj.attrib.get('class')
+
+        if klass == 'GtkLabel':
             if orphaned_label(filename, tree, root, obj):
+                # TODO: print "orphaned within" + elm_name(label_root)
                 warn(filename, tree, obj, "no-label-for", "missing sub-element"
                      ", expected single <property name='mnemonic_widgets'> or "
                      "one or more <relation type='label-for'>")
@@ -529,7 +532,7 @@ def check_a11y_relation(filename, tree):
             continue
 
         # GtkButtons
-        if obj.attrib['class'] == "GtkButton" or obj.attrib['class'] == "GtkToolButton" :
+        if klass == "GtkButton" or klass == "GtkToolButton" :
 
             labels = obj.findall("property[@name='label']")
             if len(labels) > 1:
@@ -556,7 +559,7 @@ def check_a11y_relation(filename, tree):
         # for Radio, checkbox, etc., only if there is an orphaned label in the same context
         # (gtkframe, notebook, dialog) or a widget with several mnemonics or label-for
 
-        if obj.attrib['class'] == "GtkImage":
+        if klass == "GtkImage":
             uses = tree.iterfind("//object/property[@name='image']")
             uses = [u for u in uses if u.text == oid]
             if len(uses) > 0:
