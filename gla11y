@@ -535,6 +535,13 @@ def check_a11y_relation(filename, tree):
             # Has a <property name="tooltip_text">
             continue
 
+        placeholders = obj.findall("property[@name='placeholder_text']")
+        if len(placeholders) > 1:
+            err(filename, tree, obj, "multiple-tooltip", "has multiple placeholder_text properties")
+        if len(placeholders) == 1:
+            # Has a <property name="placeholder_text">
+            continue
+
         # GtkButtons usually don't need an external label, their own is enough.
         if klass == "GtkButton" or klass == "GtkToolButton" :
 

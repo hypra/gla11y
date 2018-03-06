@@ -2,6 +2,6 @@
 <!-- Generated with glade 3.20.0 -->
 <child>
 	<object class="GtkEntry" id="entry">
-		<property name="tooltip_text">my entry</property>
+		<property name="placeholder_text">my entry</property>
 	</object>
 </child>
