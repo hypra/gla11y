@@ -474,6 +474,8 @@ def check_a11y_relation(filename, tree):
         if obj.attrib['class'] in widgets_ignored:
             continue
 
+        requires_label = False
+
         labelled_by = obj.findall("accessibility/relation[@type='labelled-by']")
         check_rels(filename, tree, root, obj, labelled_by)
 
@@ -597,8 +599,7 @@ def check_a11y_relation(filename, tree):
 
         # So, no label
         if klass == 'GtkEntry' or klass == 'GtkScale' or klass == 'GtkSpinButton':
-            # These always need a label.
-            warn(filename, tree, obj, "no-labelled-by", "has no accessibility label")
+            requires_label = True
 
         label_root = elm_labelled_parent(root, obj)
         if label_root is None:
@@ -609,6 +610,9 @@ def check_a11y_relation(filename, tree):
         if len(orphaned_labels(filename, tree, root, label_root)) == 0:
             # But no orphaned label either, so probably the labelled parent
             # provides enough context.
+            if requires_label:
+                # These always need a label.
+                warn(filename, tree, obj, "no-labelled-by", "has no accessibility label")
             continue
 
         context = elm_name(label_root)
