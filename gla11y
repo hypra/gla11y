@@ -483,6 +483,12 @@ def check_a11y_relation(filename, tree):
 
         # Not a label
 
+        ## Should not have label-for
+        #label_for = obj.findall("accessibility/relation[@type='label-for']")
+        #if len(label_for) > 0:
+        #    # TODO: should it be supported by Orca, or just reversed?
+        #    err(filename, tree, obj, "label-for", "has label-for relation, but is not a label")
+
         # Case 1: has a <child internal-child="accessible"> sub-element
         children = obj.findall("child[@internal-child='accessible']")
         if children:
