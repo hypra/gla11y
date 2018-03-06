@@ -17,7 +17,8 @@ TESTS =		000-multiple_a11y_children \
 		014-empty_GtkLabel_but_child \
 		015-image_for_button \
 		016-missing_labelled-by-but-labelled-frame \
-		017-missing_labelled-by-without-labelled-frame
+		017-missing_labelled-by-without-labelled-frame \
+		018-empty_GtkLabel-but-no-label
 
 LOGTESTS =	100-multiple_a11y_children
 

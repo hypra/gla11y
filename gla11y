@@ -218,6 +218,10 @@ def orphaned_label(filename, tree, root, obj):
     if len(label_for) > 0:
         return False
 
+    no_label_for = obj.findall("accessibility/relation[@type='no-label-for']")
+    if len(no_label_for) > 0:
+        return False
+
     # ...a single "mnemonic_widget"
     properties = obj.findall("property[@name='mnemonic_widget']")
     check_props(filename, tree, root, obj, properties)
