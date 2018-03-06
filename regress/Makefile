@@ -18,7 +18,8 @@ TESTS =		000-multiple_a11y_children \
 		015-image_for_button \
 		016-missing_labelled-by-but-labelled-frame \
 		017-missing_labelled-by-without-labelled-frame \
-		018-empty_GtkLabel-but-no-label
+		018-empty_GtkLabel-but-no-label \
+		019-missing_labelled-by-but-tooltip.ui
 
 LOGTESTS =	100-multiple_a11y_children
 

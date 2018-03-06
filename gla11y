@@ -521,6 +521,13 @@ def check_a11y_relation(filename, tree):
                     "%s" % elms_lines(props))
                 continue
 
+        tooltips = obj.findall("property[@name='tooltip_text']")
+        if len(tooltips) > 1:
+            err(filename, tree, obj, "multiple-tooltip", "has multiple tooltip_text properties")
+        if len(tooltips) == 1:
+            # Has a <property name="tooltip_text">
+            continue
+
         # GtkButtons
         if obj.attrib['class'] == "GtkButton" or obj.attrib['class'] == "GtkToolButton" :
 
@@ -533,13 +540,6 @@ def check_a11y_relation(filename, tree):
                     # And it's a standard Ok/Cancel/etc. button
                     continue
                 # TODO: warn only if gtklabel not far
-                continue
-
-            tooltips = obj.findall("property[@name='tooltip_text']")
-            if len(tooltips) > 1:
-                err(filename, tree, obj, "multiple-tooltip", "has multiple tooltip_text properties")
-            if len(tooltips) == 1:
-                # Has a <property name="tooltip_text">
                 continue
 
             actions = obj.findall("property[@name='action_name']")
