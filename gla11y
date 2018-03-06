@@ -472,10 +472,13 @@ def check_a11y_relation(filename, tree):
 
         if klass == 'GtkLabel':
             if orphaned_label(filename, tree, root, obj):
-                # TODO: print "orphaned within" + elm_name(label_root)
-                warn(filename, tree, obj, "no-label-for", "missing sub-element"
-                     ", expected single <property name='mnemonic_widgets'> or "
-                     "one or more <relation type='label-for'>")
+                label_root = elm_labelled_parent(root, obj)
+                if label_root is None:
+                    label_root = root
+                context = elm_name(label_root)
+                if context:
+                    context = " within " + context
+                warn(filename, tree, obj, "no-label-for", "does not specify what it labels" + context)
             continue
 
         # Not a label
