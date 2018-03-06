@@ -577,7 +577,10 @@ def check_a11y_relation(filename, tree):
             # provides enough context.
             continue
 
-        warn(filename, tree, obj, "no-labelled-by", "has no accessibility label while there are orphaned labels")
+        context = elm_name(label_root)
+        if context:
+            context = " within " + context
+        warn(filename, tree, obj, "no-labelled-by", "has no accessibility label while there are orphaned labels" + context)
         continue
 
 def usage():
