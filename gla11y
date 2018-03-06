@@ -565,6 +565,14 @@ def check_a11y_relation(filename, tree):
                 # the element instead.
                 continue
 
+        parent = elm_parent(root, obj)
+        if parent is not None:
+            if klass == 'GtkEntry' and parent.tag == 'child' and \
+                parent.attrib.get('internal-child') == "entry":
+                # This is an internal entry of another widget. That one will
+                # need relations etc.
+                continue
+
         # So, no label
         if klass == 'GtkEntry' or klass == 'GtkScale' or klass == 'GtkSpinButton':
             # These always need a label.
