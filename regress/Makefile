@@ -19,7 +19,8 @@ TESTS =		000-multiple_a11y_children \
 		017-missing_labelled-by-without-labelled-frame \
 		018-empty_GtkLabel-but-no-label \
 		019-missing_labelled-by-but-tooltip \
-		020-button-missing-label
+		020-button-missing-label \
+		021-entry-missing-label
 
 LOGTESTS =	100-multiple_a11y_children
 

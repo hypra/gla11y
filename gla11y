@@ -569,6 +569,9 @@ def check_a11y_relation(filename, tree):
                 continue
 
         # So, no label
+        if klass == 'GtkEntry' or klass == 'GtkScale' or klass == 'GtkSpinButton':
+            # These always need a label.
+            warn(filename, tree, obj, "no-labelled-by", "does not have labelling")
 
         label_root = elm_labelled_parent(root, obj)
         if label_root is None:
