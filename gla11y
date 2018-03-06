@@ -159,7 +159,10 @@ def elm_labelled_parent(root, elm):
         """
         Return whether this element is a labelled parent
         """
-        if elm.attrib.get('class') == 'GtkFrame' or elm.attrib.get('class') == 'GtkNotebook':
+        klass = elm.attrib.get('class')
+        if klass == 'GtkDialog':
+            return True
+        if klass == 'GtkFrame' or klass == 'GtkNotebook':
             children = elm.findall("child[@type='tab']") + elm.findall("child[@type='label']") 
             if len(children) >= 1:
                 return True
