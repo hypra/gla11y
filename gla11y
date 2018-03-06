@@ -535,7 +535,7 @@ def check_a11y_relation(filename, tree):
             # Has a <property name="tooltip_text">
             continue
 
-        # GtkButtons
+        # GtkButtons usually don't need an external label, their own is enough.
         if klass == "GtkButton" or klass == "GtkToolButton" :
 
             labels = obj.findall("property[@name='label']")
@@ -554,6 +554,7 @@ def check_a11y_relation(filename, tree):
 
             # no label for a button, warn
             warn(filename, tree, obj, "button-no-label", "does not have its own label");
+            continue
 
         if klass == "GtkImage":
             uses = tree.iterfind("//object/property[@name='image']")
