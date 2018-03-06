@@ -176,6 +176,9 @@ def elm_labelled_parent(root, elm):
             if parent is None:
                 return None
             return find_labelled_parent(parent)
+        parent = elm.getparent()
+        if parent is None:
+            return None
         return find_labelled_parent(elm.getparent())
     else:
         def find_labelled_parent(cur, elm):
