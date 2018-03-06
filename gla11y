@@ -328,6 +328,10 @@ def elm_name(elm):
         if 'id' in elm.attrib:
             id = elm.attrib['id'].encode('ascii','ignore').decode('ascii')
             name += "'%s' " % id
+        if not name:
+            name = elm.tag
+            if lxml:
+                name += " line " + str(elm.sourceline)
         return name
     return ""
 
