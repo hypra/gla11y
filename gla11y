@@ -550,6 +550,7 @@ def check_a11y_relation(filename, tree):
                 continue
 
             # no label for a button, warn
+            warn(filename, tree, obj, "button-no-label", "does not have its own label");
 
         # TODO: always warn for GtkEntry, Scale, Spinbutton
         # for Radio, checkbox, etc., only if there is an orphaned label in the same context
