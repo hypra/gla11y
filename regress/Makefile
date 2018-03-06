@@ -9,7 +9,6 @@ TESTS =		000-multiple_a11y_children \
 		006-empty_GtkLabel \
 		007-multiple_label-for \
 		008-more_than_one_mnemonic_widget \
-		009-missing_labelled-by-but-standard \
 		010-missing_labelled-by-but-tooltip \
 		011-missing_labelled-by-but-action_name \
 		012-broken_labelled-by \
@@ -19,7 +18,7 @@ TESTS =		000-multiple_a11y_children \
 		016-missing_labelled-by-but-labelled-frame \
 		017-missing_labelled-by-without-labelled-frame \
 		018-empty_GtkLabel-but-no-label \
-		019-missing_labelled-by-but-tooltip.ui
+		019-missing_labelled-by-but-tooltip
 
 LOGTESTS =	100-multiple_a11y_children
 

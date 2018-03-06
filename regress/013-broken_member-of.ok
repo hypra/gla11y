@@ -1,2 +1,4 @@
 013-broken_member-of.ui:9 ERROR: 'GtkSpinButton' 'column' uses undeclared target 'colsb2'
+013-broken_member-of.ui:9 WARNING: 'GtkSpinButton' 'column' does not have labelling
 1 new error
+1 new warning
