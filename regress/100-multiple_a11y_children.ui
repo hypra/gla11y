@@ -6,7 +6,7 @@
 		</object>
 	</child>
 	<child internal-child="accessible">
-		<object class="AtkObject" id="type_log_1-atkobject">
+		<object class="AtkObject" id="type_log_2-atkobject">
 		</object>
 	</child>
 </object>

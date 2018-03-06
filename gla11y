@@ -120,6 +120,7 @@ widgets_ignored = [
 
 progname = os.path.basename(sys.argv[0])
 suppressions = {}
+ids = {}
 gen_suppr = None
 gen_supprfile = None
 suppr_prefix = ""
@@ -414,23 +415,13 @@ def warn(filename, tree, elm, msgtype, msg):
         print(msg, file=outfile)
 
 
-def check_objects(filename, tree, elm, objects, target):
-    """
-    Check that objects contains exactly one object
-    """
-    length = len(list(objects))
-    if length == 0:
-        err(filename, tree, elm, "undeclared-target", "uses undeclared target '%s'" % target)
-    elif length > 1:
-        err(filename, tree, elm, "multiple-target", "multiple targets are named '%s'" % target)
-
 def check_props(filename, tree, root, elm, props):
     """
     Check the given list of relation properties
     """
     for prop in props:
-        objects = root.iterfind(".//object[@id='%s']" % prop.text)
-        check_objects(filename, tree, elm, objects, prop.text)
+        if prop.text not in ids:
+            err(filename, tree, elm, "undeclared-target", "uses undeclared target '%s'" % prop.text)
 
 def check_rels(filename, tree, root, elm, rels):
     """
@@ -438,15 +429,24 @@ def check_rels(filename, tree, root, elm, rels):
     """
     for rel in rels:
         target = rel.attrib['target']
-        targets = root.iterfind(".//object[@id='%s']" % target)
-        check_objects(filename, tree, elm, targets, target)
+        if target not in ids:
+            err(filename, tree, elm, "undeclared-target", "uses undeclared target '%s'" % target)
+
+def elm_line(elm):
+    """
+    Return the line for the given element.
+    """
+    if lxml:
+        return " line " + str(elm.sourceline)
+    else:
+        return ""
 
 def elms_lines(elms):
     """
     Return the list of lines for the given elements.
     """
     if lxml:
-        return ": lines " + ', '.join([str(l.sourceline) for l in elms])
+        return " lines " + ', '.join([str(l.sourceline) for l in elms])
     else:
         return ""
 
@@ -456,8 +456,19 @@ def check_a11y_relation(filename, tree):
     document represented by `root' doesn't comply with Accessibility
     rules.
     """
-    global widgets_ignored
+    global widgets_ignored, ids
     root = tree.getroot()
+
+    ids = {}
+
+    for obj in root.iter('object'):
+        oid = obj.attrib.get('id')
+        if oid is not None:
+            if oid in ids:
+                o = ids[oid]
+                warn(filename, tree, obj, "duplicate-id", "has the same id as " + elm_name(o) + elm_line(o))
+            else:
+                ids[oid] = obj
 
     for obj in root.iter('object'):
         if obj.attrib['class'] in widgets_ignored:

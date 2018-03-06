@@ -1,2 +1,2 @@
-003-multiple_mnemonic_widget.ui:15 WARNING: 'GtkComboBoxText' 'custom' is referenced by multiple mnemonic_widget: lines 6, 11
+003-multiple_mnemonic_widget.ui:15 WARNING: 'GtkComboBoxText' 'custom' is referenced by multiple mnemonic_widget lines 6, 11
 1 new warning

@@ -1,4 +1,4 @@
-012-broken_labelled-by.ui:5 WARNING: 'GtkLabel' 'colsb1' does not specify what it labels
+012-broken_labelled-by.ui:5 WARNING: 'GtkLabel' 'colsb1' does not specify what it labels within child line 3
 012-broken_labelled-by.ui:9 ERROR: 'GtkSpinButton' 'column' uses undeclared target 'colsb2'
 1 new error
 1 new warning
