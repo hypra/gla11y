@@ -1,4 +1,4 @@
 025-multiple-labelled-by.ui:19 ERROR: 'GtkSpinButton' 'column' has multiple labelled-by relations
-025-multiple-labelled-by.ui:19 WARNING: 'GtkSpinButton' 'column' is referenced by multiple label-for 'GtkLabel' 'colsb1' line 5, 'GtkLabel' 'colsb2' line 12
+025-multiple-labelled-by.ui:19 WARNING: 'GtkSpinButton' 'column' is referenced by multiple label-for 'GtkLabel' 'colsb1' line 5 , 'GtkLabel' 'colsb2' line 12 
 1 new error
 1 new warning

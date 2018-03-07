@@ -1,2 +1,2 @@
-024-both-label-for-and-mnemonic.ui:17 ERROR: 'GtkSpinButton' 'column' has both a mnemonic 'GtkLabel' 'colsb2' and labelled-by relation
+024-both-label-for-and-mnemonic.ui:17 ERROR: 'GtkSpinButton' 'column' has both a mnemonic 'GtkLabel' 'colsb2' line 12 and labelled-by relation
 1 new error
