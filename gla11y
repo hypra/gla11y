@@ -109,6 +109,17 @@ widgets_needlabel = [
     'GtkEntry',
     'GtkScale',
     'GtkSpinButton',
+    'GtkSwitch',
+]
+
+# These widgets normally have their own label
+widgets_buttons = [
+    'GtkButton',
+    'GtkToggleButton',
+    'GtkToolButton',
+    'GtkRadioButton',
+    'GtkCheckButton',
+    'GtkLockButton',
 ]
 
 # To include for LO for sure:
@@ -638,8 +649,8 @@ def check_a11y_relation(filename, tree):
         if len(placeholders) >= 1:
             return
 
-        # GtkButtons usually don't need an external label, their own is enough, (but they do need one)
-        if klass == "GtkButton" or klass == "GtkToolButton" :
+        # Buttons usually don't need an external label, their own is enough, (but they do need one)
+        if klass in widgets_buttons:
 
             labels = obj.findall("property[@name='label']")
             if len(labels) > 1:
