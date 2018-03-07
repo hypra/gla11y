@@ -1,2 +1,2 @@
-007-multiple_label-for.ui:9 ERROR: 'GtkLabel' 'column' uses undeclared target 'colsb2'
+007-multiple_label-for.ui:12 ERROR: 'GtkLabel' 'column' label-for uses undeclared target 'colsb2'
 1 new error

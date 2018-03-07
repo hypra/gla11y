@@ -21,7 +21,19 @@ TESTS =		000-multiple_a11y_children \
 		019-missing_labelled-by-but-placeholder \
 		020-button-missing-label \
 		021-entry-missing-label \
-		022-missing_labelled-by-but-internal-child
+		022-missing_labelled-by-but-internal-child \
+		023-duplicate-id \
+		024-both-label-for-and-mnemonic \
+		025-multiple-labelled-by \
+		026-multiple-tooltip \
+		027-multiple-placeholder \
+		028-multiple-label \
+		029-multiple-action_name \
+		030-accessible \
+		031-label-for \
+		032-mnemonic \
+		033-missing_labelled-by-but-label \
+		034-image
 
 LOGTESTS =	100-multiple_a11y_children
 

@@ -3,11 +3,22 @@
 <child internal-child="vbox">
 	<child>
 		<object class="GtkLabel" id="colsb1">
+        		<accessibility>
+        			<relation type="label-for" target="column"/>
+        		</accessibility>
+		</object>
+	</child>
+	<child>
+		<object class="GtkLabel" id="colsb2">
+        		<accessibility>
+        			<relation type="label-for" target="column"/>
+        		</accessibility>
 		</object>
 	</child>
         <child>
         	<object class="GtkSpinButton" id="column">
         		<accessibility>
+        			<relation type="labelled-by" target="colsb1"/>
         			<relation type="labelled-by" target="colsb2"/>
         		</accessibility>
         	</object>

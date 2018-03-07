@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.20.0 -->
+<child>
+	<object class="GtkEntry" id="entry">
+		<property name="placeholder_text">my entry</property>
+		<property name="placeholder_text">my entry2</property>
+	</object>
+</child>

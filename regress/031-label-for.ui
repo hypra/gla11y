@@ -8,19 +8,8 @@
                         </accessibility>
 		</object>
 	</child>
-	<child>
-		<object class="GtkSpinButton" id="colsb2">
-		</object>
-	</child>
         <child>
         	<object class="GtkLabel" id="column">
-        		<accessibility>
-        			<relation type="label-for" target="colsb1"/>
-        		</accessibility>
-        	</object>
-        </child>
-        <child>
-        	<object class="GtkLabel" id="column2">
         		<accessibility>
         			<relation type="label-for" target="colsb1"/>
         		</accessibility>

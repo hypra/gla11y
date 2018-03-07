@@ -1,2 +1,2 @@
-004-broken_label-for.ui:16 ERROR: 'GtkLabel' 'column2' uses undeclared target 'colsb2'
+004-broken_label-for.ui:19 ERROR: 'GtkLabel' 'column2' label-for uses undeclared target 'colsb2'
 1 new error

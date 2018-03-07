@@ -1,4 +1,4 @@
-013-broken_member-of.ui:9 ERROR: 'GtkSpinButton' 'column' uses undeclared target 'colsb2'
+013-broken_member-of.ui:9 ERROR: 'GtkSpinButton' 'column' member-of uses undeclared target 'colsb2'
 013-broken_member-of.ui:9 WARNING: 'GtkSpinButton' 'column' has no accessibility label
 1 new error
 1 new warning

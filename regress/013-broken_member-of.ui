@@ -5,11 +5,11 @@
 		<object class="GtkCheckButton" id="colsb1">
 		</object>
 	</child>
-  <child>
-  	<object class="GtkSpinButton" id="column">
-  		<accessibility>
-  			<relation type="member-of" target="colsb2"/>
-  		</accessibility>
-  	</object>
-  </child>
+        <child>
+        	<object class="GtkSpinButton" id="column">
+        		<accessibility>
+        			<relation type="member-of" target="colsb2"/>
+        		</accessibility>
+        	</object>
+        </child>
 </child>

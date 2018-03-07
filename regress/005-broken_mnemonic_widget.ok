@@ -1,2 +1,2 @@
-005-broken_mnemonic_widget.ui:10 ERROR: 'GtkLabel' 'customft2' uses undeclared target 'custom2'
+005-broken_mnemonic_widget.ui:10 ERROR: 'GtkLabel' 'customft2' mnemonic_widget uses undeclared target 'custom2'
 1 new error

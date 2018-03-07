@@ -14,5 +14,9 @@
 	<child>
 		<object class="GtkComboBoxText" id="custom">
 		</object>
-  </child>
+        </child>
+	<child>
+		<object class="GtkComboBoxText" id="custom2">
+		</object>
+        </child>
 </child>
