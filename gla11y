@@ -81,10 +81,6 @@ widgets_ignored = widgets_toplevel + [
     'GtkVBox',
     'GtkHBox',
 
-    'sfxlo-ContextVBox',
-    'sfxlo-PriorityHBox',
-    'sfxlo-PriorityMergedHBox',
-
     # Invisible actions
     'GtkSeparator',
     'GtkAction',
@@ -137,23 +133,11 @@ widgets_ignored = widgets_toplevel + [
     'GtkToolButton',
     'GtkToolItem',
 
-    # LO
-    'svtlo-ManagedMenuButton',
-
     # This precisely give a11y information :)
     'AtkObject',
 ]
 
 widgets_suffixignored = [
-
-    #LO
-    'ValueSet',
-    'HBox',
-    'VBox',
-    'ToolBox',
-    'Preview',
-    'PreviewWin',
-    'PreviewWindow',
 ]
 
 # These widgets always need a label
@@ -196,17 +180,21 @@ widgets_labels = [
 # svtlo-SvTreeListBox ?
 
 progname = os.path.basename(sys.argv[0])
+
 suppressions = {}
 ids = {}
 ids_dup = {}
 labelled_by_elm = {}
 label_for_elm = {}
 mnemonic_for_elm = {}
+
 gen_suppr = None
 gen_supprfile = None
 suppr_prefix = ""
 outfile = None
+
 pflag = False
+
 Werror = False
 Wnone = False
 errors = 0
@@ -662,6 +650,7 @@ def check_a11y_relation(filename, tree):
         # Check member-of
         member_of = check_rels(filename, tree, root, obj, "member-of")
 
+        # TODO: we'll want to be able to only show orphaned labels when there are orphaned widgets
 
         # Labels special case
         if klass in widgets_labels:
@@ -838,27 +827,65 @@ def check_a11y_relation(filename, tree):
 def usage():
     print("%s [-W error|none] [-p] [-g SUPPR_FILE] [-s SUPPR_FILE] [-i WIDGET1,WIDGET2[,...]] [-o LOG_FILE] [file ...]" % progname,
           file=sys.stderr)
-    print("  -p print XML class path instead of line number");
-    print("  -g Generate suppression file SUPPR_FILE");
-    print("  -s Suppress warnings given by file SUPPR_FILE");
-    print("  -i Ignore warnings for widgets of a given class");
-    print("  -o Also prints errors and warnings to given file");
+    print("")
+    print("  -p Print XML class path instead of line number")
+    print("  -g Generate suppression file SUPPR_FILE")
+    print("  -s Suppress warnings given by file SUPPR_FILE")
+    print("  -i Ignore warnings for widgets of a given class")
+    print("  -o Also prints errors and warnings to given file")
+    print("")
+    print("  --widgets-FOO [+][CLASS1[,CLASS2[,...]]]")
+    print("    Give or extend one of the lists of widget classes, where FOO can be:")
+    print("    - toplevel      : widgets to be considered toplevel windows")
+    print("    - ignored       : widgets which do not need labelling (e.g. GtkBox)")
+    print("    - suffixignored : suffixes of widget classes which do not need labelling")
+    print("    - needlabel     : widgets which always need labelling (e.g. GtkEntry)")
+    print("    - buttons       : widgets which need their own label but not more")
+    print("                      (e.g. GtkButton)")
+    print("    - labels        : widgets which provide labels (e.g. GtkLabel)")
+    print("  --widgets-print print default widgets lists")
     sys.exit(2)
+
+def widgets_opt(widgets_list, arg):
+    """
+    Replace or extend `widgets_list' with the list of classes contained in `arg'
+    """
+    append = arg and arg[0] == '+'
+    if append:
+        arg = arg[1:]
+
+    if arg:
+        widgets = arg.split(',')
+    else:
+        widgets = []
+
+    if not append:
+        del widgets_list[:]
+
+    widgets_list.extend(widgets)
 
 
 def main():
-    global pflag, Werror, Wnone, gen_suppr, gen_supprfile, suppressions, suppr_prefix, errors, widgets_ignored, outfile
+    global pflag, Werror, Wnone, gen_suppr, gen_supprfile, suppressions, suppr_prefix, errors
+    global widgets_toplevel, widgets_ignored, widgets_suffixignored, widgets_needlabel, widgets_buttons, widgets_labels
+    global outfile
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "W:piIg:s:P:o:L:")
+        opts, args = getopt.getopt(sys.argv[1:], "W:piIg:s:P:o:L:", [
+                "widgets-toplevel=",
+                "widgets-ignored=",
+                "widgets-suffixignored=",
+                "widgets-needlabel=",
+                "widgets-buttons=",
+                "widgets-labels=",
+                "widgets-print",
+            ] )
     except getopt.GetoptError:
         usage()
 
     suppr = None
     out = None
     filelist = None
-    ignore = False
-    widgets = []
 
     for o, a in opts:
         if o == "-W":
@@ -868,10 +895,6 @@ def main():
                 Wnone = True
         elif o == "-p":
             pflag = True
-        elif o == "-i":
-            widgets = a.split(',')
-        elif o == "-I":
-            ignore = True
         elif o == "-g":
             gen_suppr = a
         elif o == "-s":
@@ -882,14 +905,26 @@ def main():
             out = a
         elif o == "-L":
             filelist = a
-
-    if ignore and widgets:
-        usage()
-
-    if ignore:
-        widgets_ignored = []
-    elif widgets:
-        widgets_ignored.extend(widgets)
+        elif o == "--widgets-toplevel":
+            widgets_opt(widgets_toplevel, a)
+        elif o == "--widgets-ignored":
+            widgets_opt(widgets_ignored, a)
+        elif o == "--widgets-suffixignored":
+            widgets_opt(widgets_suffixignored, a)
+        elif o == "--widgets-needlabel":
+            widgets_opt(widgets_needlabel, a)
+        elif o == "--widgets-buttons":
+            widgets_opt(widgets_buttons, a)
+        elif o == "--widgets-labels":
+            widgets_opt(widgets_labels, a)
+        elif o == "--widgets-print":
+            print("--widgets-toplevel '" + ','.join(widgets_toplevel) + "'")
+            print("--widgets-ignored '" + ','.join(widgets_ignored) + "'")
+            print("--widgets-suffixignored '" + ','.join(widgets_suffixignored) + "'")
+            print("--widgets-needlabel '" + ','.join(widgets_needlabel) + "'")
+            print("--widgets-buttons '" + ','.join(widgets_buttons) + "'")
+            print("--widgets-labels '" + ','.join(widgets_labels) + "'")
+            sys.exit(0)
 
     # Read suppression file before overwriting it
     if suppr is not None:
