@@ -214,6 +214,10 @@ errexists = 0
 warnings = 0
 warnexists = 0
 
+#
+# XML browsing and printing functions
+#
+
 def elm_parent(root, elm):
     """
     Return the parent of the element.
@@ -230,6 +234,208 @@ def elm_parent(root, elm):
                     return parent
             return None
         return find_parent(root, elm)
+
+def step_elm(elm):
+    """
+    Return the XML class path step corresponding to elm.
+    This can be empty if the elm does not have any class or id.
+    """
+    step = elm.attrib.get('class')
+    if step is None:
+        step = ""
+    oid = elm.attrib.get('id')
+    if oid is not None:
+        oid = oid.encode('ascii','ignore').decode('ascii')
+        step += "[@id='%s']" % oid
+    if len(step) > 0:
+        step += '/'
+    return step
+
+def find_elm(root, elm):
+    """
+    Return the XML class path of the element from the given root.
+    This is the slow version used when getparent is not available.
+    """
+    if root == elm:
+        return ""
+    for o in root:
+        path = find_elm(o, elm)
+        if path is not None:
+            step = step_elm(o)
+            return step + path
+    return None
+
+def errpath(filename, tree, elm):
+    """
+    Return the XML class path of the element
+    """
+    if elm is None:
+        return ""
+    path = ""
+    if 'class' in elm.attrib:
+        path += elm.attrib['class']
+    oid = elm.attrib.get('id')
+    if oid is not None:
+        oid = oid.encode('ascii','ignore').decode('ascii')
+        path += "[@id='%s']" % oid
+    if lxml:
+        elm = elm.getparent()
+        while elm is not None:
+            step = step_elm(elm)
+            path = step + path
+            elm = elm.getparent()
+    else:
+        path = find_elm(tree.getroot(), elm)[:-1]
+    path = filename + ':' + path
+    return path
+
+#
+# Warning/Error printing functions
+#
+
+def elm_prefix(filename, elm):
+    """
+    Return the display prefix of the element
+    """
+    if elm == None or not lxml:
+        return "%s:" % filename
+    else:
+        return "%s:%u" % (filename, elm.sourceline)
+
+def elm_name(elm):
+    """
+    Return a display name of the element
+    """
+    if elm is not None:
+        name = ""
+        if 'class' in elm.attrib:
+            name = "'%s' " % elm.attrib['class']
+        if 'id' in elm.attrib:
+            id = elm.attrib['id'].encode('ascii','ignore').decode('ascii')
+            name += "'%s' " % id
+        if not name:
+            name = "'" + elm.tag + "'"
+            if lxml:
+                name += " line " + str(elm.sourceline)
+        return name
+    return ""
+
+def elm_name_line(elm):
+    """
+    Return a display name of the element with line number
+    """
+    if elm is not None:
+        name = elm_name(elm)
+        if lxml and " line " not in name:
+            name += "line " + str(elm.sourceline) + " "
+        return name
+    return ""
+
+def elm_line(elm):
+    """
+    Return the line for the given element.
+    """
+    if lxml:
+        return " line " + str(elm.sourceline)
+    else:
+        return ""
+
+def elms_lines(elms):
+    """
+    Return the list of lines for the given elements.
+    """
+    if lxml:
+        return " lines " + ', '.join([str(l.sourceline) for l in elms])
+    else:
+        return ""
+
+def elms_names_lines(elms):
+    """
+    Return the list of names and lines for the given elements.
+    """
+    return ', '.join([elm_name_line(elm) for elm in elms])
+
+def elm_suppr(filename, tree, elm, msgtype):
+    """
+    Return the prefix to be displayed to the user and the suppression line for
+    the warning type "msgtype" for element "elm"
+    """
+    global gen_suppr, gen_supprfile, suppr_prefix, pflag
+
+    if suppressions or gen_suppr is not None or pflag:
+        prefix = errpath(filename, tree, elm)
+        if prefix[0:len(suppr_prefix)] == suppr_prefix:
+            prefix = prefix[len(suppr_prefix):]
+
+    if suppressions or gen_suppr is not None:
+        suppr = '%s %s' % (prefix, msgtype)
+
+        if gen_suppr is not None and msgtype is not None:
+            if gen_supprfile is None:
+                gen_supprfile = open(gen_suppr, 'w')
+            print(suppr, file=gen_supprfile)
+    else:
+        suppr = None
+
+    if not pflag:
+        # Use user-friendly line numbers
+        prefix = elm_prefix(filename, elm)
+        if prefix[0:len(suppr_prefix)] == suppr_prefix:
+            prefix = prefix[len(suppr_prefix):]
+
+    return (prefix, suppr)
+
+def err(filename, tree, elm, msgtype, msg):
+    """
+    Emit an error for an element
+    """
+    global errors, errexists
+
+    (prefix, suppr) = elm_suppr(filename, tree, elm, msgtype)
+
+    if suppr in suppressions:
+        # Suppressed
+        errexists += 1
+        return
+
+    errors += 1
+    msg = "%s ERROR: %s%s" % (prefix, elm_name(elm), msg)
+    print(msg)
+    if outfile is not None:
+        print(msg, file=outfile)
+
+
+def warn(filename, tree, elm, msgtype, msg):
+    """
+    Emit a warning for an element
+    """
+    global Werror, Wnone, errors, errexists, warnings, warnexists
+
+    if Wnone:
+        return
+
+    (prefix, suppr) = elm_suppr(filename, tree, elm, msgtype)
+    if suppr in suppressions:
+        # Suppressed
+        if Werror:
+            errexists += 1
+        else:
+            warnexists += 1
+        return
+
+    if Werror:
+        errors += 1
+    else:
+        warnings += 1
+
+    msg = "%s WARNING: %s%s" % (prefix, elm_name(elm), msg)
+    print(msg)
+    if outfile is not None:
+        print(msg, file=outfile)
+
+#
+# Labelling testing functions
+#
 
 def is_labelled_parent(elm):
     """
@@ -363,176 +569,9 @@ def orphaned_labels(filename, tree, root, elm):
                 return True
     return False
 
-def step_elm(elm):
-    """
-    Return the XML class path step corresponding to elm.
-    This can be empty if the elm does not have any class or id.
-    """
-    step = elm.attrib.get('class')
-    if step is None:
-        step = ""
-    oid = elm.attrib.get('id')
-    if oid is not None:
-        oid = oid.encode('ascii','ignore').decode('ascii')
-        step += "[@id='%s']" % oid
-    if len(step) > 0:
-        step += '/'
-    return step
-
-def find_elm(root, elm):
-    """
-    Return the XML class path of the element from the given root.
-    This is the slow version used when getparent is not available.
-    """
-    if root == elm:
-        return ""
-    for o in root:
-        path = find_elm(o, elm)
-        if path is not None:
-            step = step_elm(o)
-            return step + path
-    return None
-
-def errpath(filename, tree, elm):
-    """
-    Return the XML class path of the element
-    """
-    if elm is None:
-        return ""
-    path = ""
-    if 'class' in elm.attrib:
-        path += elm.attrib['class']
-    oid = elm.attrib.get('id')
-    if oid is not None:
-        oid = oid.encode('ascii','ignore').decode('ascii')
-        path += "[@id='%s']" % oid
-    if lxml:
-        elm = elm.getparent()
-        while elm is not None:
-            step = step_elm(elm)
-            path = step + path
-            elm = elm.getparent()
-    else:
-        path = find_elm(tree.getroot(), elm)[:-1]
-    path = filename + ':' + path
-    return path
-
-def elm_prefix(filename, elm):
-    """
-    Return the display prefix of the element
-    """
-    if elm == None or not lxml:
-        return "%s:" % filename
-    else:
-        return "%s:%u" % (filename, elm.sourceline)
-
-def elm_name(elm):
-    """
-    Return a display name of the element
-    """
-    if elm is not None:
-        name = ""
-        if 'class' in elm.attrib:
-            name = "'%s' " % elm.attrib['class']
-        if 'id' in elm.attrib:
-            id = elm.attrib['id'].encode('ascii','ignore').decode('ascii')
-            name += "'%s' " % id
-        if not name:
-            name = "'" + elm.tag + "'"
-            if lxml:
-                name += " line " + str(elm.sourceline)
-        return name
-    return ""
-
-def elm_name_line(elm):
-    """
-    Return a display name of the element with line number
-    """
-    if elm is not None:
-        name = elm_name(elm)
-        if lxml and " line " not in name:
-            name += "line " + str(elm.sourceline) + " "
-        return name
-    return ""
-
-def elm_suppr(filename, tree, elm, msgtype):
-    """
-    Return the prefix to be displayed to the user and the suppression line for
-    the warning type "msgtype" for element "elm"
-    """
-    global gen_suppr, gen_supprfile, suppr_prefix, pflag
-
-    if suppressions or gen_suppr is not None or pflag:
-        prefix = errpath(filename, tree, elm)
-        if prefix[0:len(suppr_prefix)] == suppr_prefix:
-            prefix = prefix[len(suppr_prefix):]
-
-    if suppressions or gen_suppr is not None:
-        suppr = '%s %s' % (prefix, msgtype)
-
-        if gen_suppr is not None and msgtype is not None:
-            if gen_supprfile is None:
-                gen_supprfile = open(gen_suppr, 'w')
-            print(suppr, file=gen_supprfile)
-    else:
-        suppr = None
-
-    if not pflag:
-        # Use user-friendly line numbers
-        prefix = elm_prefix(filename, elm)
-        if prefix[0:len(suppr_prefix)] == suppr_prefix:
-            prefix = prefix[len(suppr_prefix):]
-
-    return (prefix, suppr)
-
-def err(filename, tree, elm, msgtype, msg):
-    """
-    Emit an error for an element
-    """
-    global errors, errexists
-
-    (prefix, suppr) = elm_suppr(filename, tree, elm, msgtype)
-
-    if suppr in suppressions:
-        # Suppressed
-        errexists += 1
-        return
-
-    errors += 1
-    msg = "%s ERROR: %s%s" % (prefix, elm_name(elm), msg)
-    print(msg)
-    if outfile is not None:
-        print(msg, file=outfile)
-
-
-def warn(filename, tree, elm, msgtype, msg):
-    """
-    Emit a warning for an element
-    """
-    global Werror, Wnone, errors, errexists, warnings, warnexists
-
-    if Wnone:
-        return
-
-    (prefix, suppr) = elm_suppr(filename, tree, elm, msgtype)
-    if suppr in suppressions:
-        # Suppressed
-        if Werror:
-            errexists += 1
-        else:
-            warnexists += 1
-        return
-
-    if Werror:
-        errors += 1
-    else:
-        warnings += 1
-
-    msg = "%s WARNING: %s%s" % (prefix, elm_name(elm), msg)
-    print(msg)
-    if outfile is not None:
-        print(msg, file=outfile)
-
+#
+# UI accessibility checks
+#
 
 def check_props(filename, tree, root, elm, forward):
     """
@@ -561,30 +600,6 @@ def check_rels(filename, tree, root, elm, forward, backward = None):
                 err(filename, tree, elm, "missing-" + backward, "has " + forward + \
                     ", but is not " + backward + " by " + elm_name_line(widget))
     return rels
-
-def elm_line(elm):
-    """
-    Return the line for the given element.
-    """
-    if lxml:
-        return " line " + str(elm.sourceline)
-    else:
-        return ""
-
-def elms_lines(elms):
-    """
-    Return the list of lines for the given elements.
-    """
-    if lxml:
-        return " lines " + ', '.join([str(l.sourceline) for l in elms])
-    else:
-        return ""
-
-def elms_names_lines(elms):
-    """
-    Return the list of names and lines for the given elements.
-    """
-    return ', '.join([elm_name_line(elm) for elm in elms])
 
 def check_a11y_relation(filename, tree):
     """
@@ -813,6 +828,10 @@ def check_a11y_relation(filename, tree):
             recurse(orphan_root, o, orphaned)
 
     recurse(root, root, False)
+
+#
+# Main
+#
 
 def usage():
     print("%s [-W error|none] [-p] [-g SUPPR_FILE] [-s SUPPR_FILE] [-i WIDGET1,WIDGET2[,...]] [-o LOG_FILE] [file ...]" % progname,
