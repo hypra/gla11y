@@ -34,6 +34,7 @@ except ImportError:
 
 
 widgets_ignored = [
+    # Containers
     'GtkFrame',
     'GtkWindow',
     'GtkScrolledWindow',
@@ -71,6 +72,9 @@ widgets_ignored = [
     'GtkTreeSelection',
 
     'svtlo-ValueSet',
+
+    # These are actually labels
+    'GtkLinkButton',
 
     # Menus are fine
     'GtkMenu',
