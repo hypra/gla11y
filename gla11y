@@ -32,46 +32,91 @@ except ImportError:
     import xml.etree.ElementTree as ET
     lxml = False
 
-
-widgets_ignored = [
-    # Containers
-    'GtkFrame',
+# Toplevel widgets
+widgets_toplevel = [
     'GtkWindow',
-    'GtkScrolledWindow',
+    'GtkOffscreenWindow',
+    'GtkApplicationWindow',
     'GtkDialog',
+    'GtkAboutDialog',
+    'GtkFileChooserDialog',
+    'GtkColorChooserDialog',
+    'GtkFontChooserDialog',
     'GtkMessageDialog',
-    'GtkNotebook',
+    'GtkRecentChooserDialog',
+    'GtkAssistant',
+    'GtkAppChooserDialog',
+]
 
-    # Invisible actions
-    'GtkAlignment',
-    'GtkAdjustment',
+widgets_ignored = widgets_toplevel + [
+    # Containers
     'GtkBox',
+    'GtkGrid',
+    'GtkNotebook',
+    'GtkFrame',
+    'GtkAspectFrame',
+    'GtkListBox',
+    'GtkFlowBox',
+    'GtkOverlay',
+    'GtkMenuBar',
+    'GtkToolbar',
+    'GtkToolpalette',
+    'GtkPaned',
+    'GtkButtonBox',
+    'GtkLayout',
+    'GtkFixed',
+    'GtkEventBox',
+    'GtkExpander',
+    'GtkViewport',
+    'GtkScrolledWindow',
+    'GtkAlignment',
+    'GtkRevealer',
+    'GtkSearchBar',
+    'GtkHeaderBar',
+    'GtkStack',
+    'GtkPopover',
+    'GtkPopoverMenu',
+    'GtkActionBar',
+
     'GtkVBox',
     'GtkHBox',
-    'GtkButtonBox',
-    'GtkGrid',
-    'GtkSizeGroup',
-    'GtkSeparator',
-    'GtkExpander',
-    'GtkActionGroup',
-    'GtkViewport',
-    'GtkPaned',
-    'GtkCellRendererText',
 
+    'sfxlo-ContextVBox',
     'sfxlo-PriorityHBox',
     'sfxlo-PriorityMergedHBox',
-    'sfxlo-ContextVBox',
 
-    'GtkScrollbar',
-    'GtkListBox',
-    'GtkStatusbar',
+    # Invisible actions
+    'GtkSeparator',
+    'GtkAction',
+    'GtkActionGroup',
+    'GtkCellRendererText',
 
     # Storage objects
     'GtkListStore',
+    'GtkTreeStore',
+    'GtkTreeModelFilter',
+    'GtkTreeModelSort',
+
+    'GtkEntryBuffer',
     'GtkTextBuffer',
+
+    'GtkSizeGroup',
+    'GtkWindowGroup',
+    'GtkAccelGroup',
+    'GtkAdjustment',
+    'GtkEntryCompletion',
+    'GtkIconFactory',
+    'GtkStatusIcon',
+    'GtkFileFilter',
+    'GtkRecentFilter',
+    'GtkRecentManager',
+    'GThemedIcon',
+
     'GtkTreeSelection',
 
-    'svtlo-ValueSet',
+    # Useless to label
+    'GtkScrollbar',
+    'GtkStatusbar',
 
     # These are actually labels
     'GtkLinkButton',
@@ -85,7 +130,6 @@ widgets_ignored = [
 
     # Toolbars are fine
     # FIXME: err, they need an action name
-    'GtkToolbar',
     'GtkSeparatorToolItem',
     'GtkToggleToolButton',
     'GtkRadioToolButton',
@@ -93,19 +137,23 @@ widgets_ignored = [
     'GtkToolButton',
     'GtkToolItem',
 
-    'sfxlo-NotebookbarToolBox',
-    'sfxlo-SidebarToolBox',
+    # LO
     'svtlo-ManagedMenuButton',
-    'vcllo-SmallButton',
-    'sfxlo-NotebookbarTabControl',
-    'sfxlo-DropdownBox',
-    'sfxlo-OptionalBox',
 
-    'vcllo-PrintPreviewWindow',
-    'cuilo-SvxNumberPreview',
-    'cuilo-BackgroundPreview',
-
+    # This precisely give a11y information :)
     'AtkObject',
+]
+
+widgets_suffixignored = [
+
+    #LO
+    'ValueSet',
+    'HBox',
+    'VBox',
+    'ToolBox',
+    'Preview',
+    'PreviewWin',
+    'PreviewWindow',
 ]
 
 # These widgets always need a label
@@ -124,7 +172,14 @@ widgets_buttons = [
     'GtkRadioButton',
     'GtkCheckButton',
     'GtkModelButton',
+    'GtkScaleButton',
     'GtkLockButton',
+]
+
+# These widgets are labels that can label other widgets
+widgets_labels = [
+    'GtkLabel',
+    'GtkAccelLabel',
 ]
 
 # To include for LO for sure:
@@ -137,7 +192,6 @@ widgets_buttons = [
 # mettre tous les svxcorelo?
 
 # svtlo-SvSimpleTableContainer ?
-
 # svxcorelo-SvxCheckListBox ?
 # svtlo-SvTreeListBox ?
 
@@ -182,7 +236,7 @@ def is_labelled_parent(elm):
     Return whether this element is a labelled parent
     """
     klass = elm.attrib.get('class')
-    if klass == 'GtkDialog':
+    if klass in widgets_toplevel:
         return True
     if klass == 'GtkFrame' or klass == 'GtkNotebook':
         children = elm.findall("child[@type='tab']") + elm.findall("child[@type='label']") 
@@ -312,7 +366,7 @@ def orphaned_labels(filename, tree, root, elm):
     """
     Check whether from some element there exists an orphaned label
     """
-    if elm.attrib.get('class') == 'GtkLabel' and \
+    if elm.attrib.get('class') in widgets_labels and \
         is_orphaned_label(filename, tree, root, elm):
         return True
     for obj in elm:
@@ -566,6 +620,9 @@ def check_a11y_relation(filename, tree):
         # "Don't care" special case
         if klass in widgets_ignored:
             return
+        for suffix in widgets_suffixignored:
+            if klass[-len(suffix):] == suffix:
+                return
 
         # Widgets usual do not strictly require a label, i.e. a labelled parent
         # is enough for context, but some do always need one.
@@ -603,8 +660,8 @@ def check_a11y_relation(filename, tree):
         member_of = check_rels(filename, tree, root, obj, "member-of")
 
 
-        # GtkLabel special case
-        if klass == 'GtkLabel':
+        # Labels special case
+        if klass in widgets_labels:
             properties = check_props(filename, tree, root, obj, "mnemonic_widget")
             if len(properties) > 1:
                 err(filename, tree, obj, "multiple-mnemonic", "has multiple mnemonic_widgets properties"
