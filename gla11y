@@ -305,13 +305,6 @@ def is_orphaned_label(filename, tree, root, obj, doprint = False):
         target = rel.attrib['target']
         l = label_for_elm[target]
         if len(l) > 1:
-            # Several labels label the same target, consider us as orphaned.
-            #if doprint:
-            #    if target in ids:
-            #        widget = elm_name_line(ids[target])
-            #    else:
-            #        widget = target
-            #    warn(filename, tree, obj, "duplicate-label-for", "targets with label-for the same widget " + widget + "as other labels " + elms_names_lines(l))
             return True
 
     # mnemonic_widget
@@ -320,13 +313,6 @@ def is_orphaned_label(filename, tree, root, obj, doprint = False):
         target = rel.text
         l = mnemonic_for_elm[target]
         if len(l) > 1:
-            # Several labels are mnemonics for the same target, consider us as orphaned.
-            #if doprint:
-            #    if target in ids:
-            #        widget = elm_name_line(ids[target])
-            #    else:
-            #        widget = target
-            #    warn(filename, tree, obj, "duplicate-mnemonic", "targets with mnemonic_widget the same widget " + widget + "as other labels " + elms_names_lines(l))
             return True
 
     if len(label_for) > 0:
@@ -572,8 +558,8 @@ def check_rels(filename, tree, root, elm, forward, backward = None):
             widget = ids[target]
             backrels = widget.findall("accessibility/relation[@type='" + backward + "']")
             if len([x for x in backrels if x.attrib['target'] == oid]) == 0:
-                warn(filename, tree, elm, "missing-" + backward, "has " + forward + \
-                     ", but is not " + backward + " by " + elm_name_line(widget))
+                err(filename, tree, elm, "missing-" + backward, "has " + forward + \
+                    ", but is not " + backward + " by " + elm_name_line(widget))
     return rels
 
 def elm_line(elm):
@@ -634,7 +620,7 @@ def check_a11y_relation(filename, tree):
                 if ids[oid] == obj:
                     # We are the first, warn
                     duplicates = tree.findall(".//object[@id='" + oid + "']")
-                    warn(filename, tree, obj, "duplicate-id", "has the same id as other elements " + elms_names_lines(duplicates))
+                    err(filename, tree, obj, "duplicate-id", "has the same id as other elements " + elms_names_lines(duplicates))
 
         # Check label-for and their dual labelled-by
         label_for = check_rels(filename, tree, root, obj, "label-for", "labelled-by")
@@ -645,16 +631,16 @@ def check_a11y_relation(filename, tree):
         # Should have only one label
         if len(labelled_by) >= 1:
             if oid in mnemonic_for_elm:
-                err(filename, tree, obj, "labelled-by-and-mnemonic",
-                    "has both a mnemonic " + elm_name_line(mnemonic_for_elm[oid][0]) + "and labelled-by relation")
+                warn(filename, tree, obj, "labelled-by-and-mnemonic",
+                     "has both a mnemonic " + elm_name_line(mnemonic_for_elm[oid][0]) + "and labelled-by relation")
             if len(labelled_by) > 1:
-                err(filename, tree, obj, "multiple-labelled-by", "has multiple labelled-by relations")
+                warn(filename, tree, obj, "multiple-labelled-by", "has multiple labelled-by relations")
         if oid in label_for_elm:
             if len(label_for_elm[oid]) > 1:
                 warn(filename, tree, obj, "duplicate-label-for", "is referenced by multiple label-for " + elms_names_lines(label_for_elm[oid]))
         if oid in mnemonic_for_elm:
             if len(mnemonic_for_elm[oid]) > 1:
-                warn(filename, tree, obj, "duplicate-label-for", "is referenced by multiple mnemonic_widget " + elms_names_lines(mnemonic_for_elm[oid]))
+                warn(filename, tree, obj, "duplicate-mnemonic", "is referenced by multiple mnemonic_widget " + elms_names_lines(mnemonic_for_elm[oid]))
 
         # Check member-of
         member_of = check_rels(filename, tree, root, obj, "member-of")
