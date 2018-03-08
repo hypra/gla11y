@@ -123,6 +123,7 @@ widgets_buttons = [
     'GtkToolButton',
     'GtkRadioButton',
     'GtkCheckButton',
+    'GtkModelButton',
     'GtkLockButton',
 ]
 
