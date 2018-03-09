@@ -560,6 +560,126 @@ def is_orphaned_label(filename, tree, root, obj, doprint = False):
         warn(filename, tree, obj, "orphan-label", "does not specify what it labels")
     return True
 
+def is_orphaned_widget(filename, tree, root, obj, orphaned, orphan_root, doprint = False):
+    """
+    Check whether this widget has no accessibility relation.
+    """
+    oid = obj.attrib.get('id')
+    klass = obj.attrib.get('class')
+
+    # "Don't care" special case
+    if klass in widgets_ignored:
+        return False
+    for suffix in widgets_suffixignored:
+        if klass[-len(suffix):] == suffix:
+            return False
+
+    # Widgets usual do not strictly require a label, i.e. a labelled parent
+    # is enough for context, but some do always need one.
+    requires_label = klass in widgets_needlabel
+
+    labelled_by = obj.findall("accessibility/relation[@type='labelled-by']")
+
+    # Labels special case
+    if klass in widgets_labels:
+        return False
+
+    # Case 1: has an explicit <child internal-child="accessible"> sub-element
+    children = obj.findall("child[@internal-child='accessible']")
+    if len(children) > 1 and doprint:
+        err(filename, tree, obj, "multiple-accessible", "has multiple <child internal-child='accessible'>"
+            "%s" % elms_lines(children))
+    if len(children) >= 1:
+        return False
+
+    # Case 2: has an <accessibility> sub-element with a "labelled-by"
+    # <relation> pointing to an existing element.
+    if len(labelled_by) > 0:
+        return False
+
+    # Case 3: has a label-for
+    if oid in label_for_elm:
+        return False
+
+    # Case 4: has a mnemonic
+    if oid in mnemonic_for_elm:
+        return False
+
+    # Case 5: Has a <property name="tooltip_text">
+    tooltips = obj.findall("property[@name='tooltip_text']")
+    if len(tooltips) > 1 and doprint:
+        err(filename, tree, obj, "multiple-tooltip", "has multiple tooltip_text properties")
+    if len(tooltips) >= 1:
+        return False
+
+    # Case 6: Has a <property name="placeholder_text">
+    placeholders = obj.findall("property[@name='placeholder_text']")
+    if len(placeholders) > 1 and doprint:
+        err(filename, tree, obj, "multiple-placeholder", "has multiple placeholder_text properties")
+    if len(placeholders) >= 1:
+        return False
+
+    # Buttons usually don't need an external label, their own is enough, (but they do need one)
+    if klass in widgets_buttons:
+
+        labels = obj.findall("property[@name='label']")
+        if len(labels) > 1 and doprint:
+            err(filename, tree, obj, "multiple-label", "has multiple label properties")
+        if len(labels) >= 1:
+            # Has a <property name="label">
+            return False
+
+        actions = obj.findall("property[@name='action_name']")
+        if len(actions) > 1 and doprint:
+            err(filename, tree, obj, "multiple-action_name", "has multiple action_name properties")
+        if len(actions) >= 1:
+            # Has a <property name="action_name">
+            return False
+
+        # no label for a button, warn
+        if doprint:
+            warn(filename, tree, obj, "button-no-label", "does not have its own label");
+        return True
+
+    # GtkImages special case
+    if klass == "GtkImage":
+        uses = [u for u in tree.iterfind(".//object/property[@name='image']") if u.text == oid]
+        if len(uses) > 0:
+            # This image is just used by another element, don't warn
+            # about the image itself, we probably want the warning on
+            # the element instead.
+            return False
+
+    # GtkEntry special case
+    if klass == 'GtkEntry':
+        parent = elm_parent(root, obj)
+        if parent is not None:
+            if parent.tag == 'child' and \
+                parent.attrib.get('internal-child') == "entry":
+                # This is an internal entry of another widget. Relations
+                # will be handled by that widget.
+                return False
+
+
+    # Really no label, perhaps emit a warning
+
+    if not orphaned:
+        # No orphaned label, so probably the labelled parent provides enough
+        # context.
+        if requires_label:
+            # But these always need a label.
+            if doprint:
+                warn(filename, tree, obj, "no-labelled-by", "has no accessibility label")
+            return True
+        return False
+
+    if doprint:
+        context = elm_name(orphan_root)
+        if context:
+            context = " within " + context
+        warn(filename, tree, obj, "no-labelled-by", "has no accessibility label while there are orphaned labels" + context)
+    return True
+
 def orphaned_labels(filename, tree, root, elm):
     """
     Check whether from some element there exists an orphaned label
@@ -681,100 +801,10 @@ def check_a11y_relation(filename, tree):
             # We are done with the label
             return
 
-
         # Not a label, will perhaps need one
 
-        # Case 1: has an explicit <child internal-child="accessible"> sub-element
-        children = obj.findall("child[@internal-child='accessible']")
-        if len(children) > 1:
-            err(filename, tree, obj, "multiple-accessible", "has multiple <child internal-child='accessible'>"
-                "%s" % elms_lines(children))
-        if len(children) >= 1:
-            return
-
-        # Case 2: has an <accessibility> sub-element with a "labelled-by"
-        # <relation> pointing to an existing element.
-        if len(labelled_by) > 0:
-            return
-
-        # Case 3: has a label-for
-        if oid in label_for_elm:
-            return
-
-        # Case 4: has a mnemonic
-        if oid in mnemonic_for_elm:
-            return
-
-        # Case 5: Has a <property name="tooltip_text">
-        tooltips = obj.findall("property[@name='tooltip_text']")
-        if len(tooltips) > 1:
-            err(filename, tree, obj, "multiple-tooltip", "has multiple tooltip_text properties")
-        if len(tooltips) >= 1:
-            return
-
-        # Case 6: Has a <property name="placeholder_text">
-        placeholders = obj.findall("property[@name='placeholder_text']")
-        if len(placeholders) > 1:
-            err(filename, tree, obj, "multiple-placeholder", "has multiple placeholder_text properties")
-        if len(placeholders) >= 1:
-            return
-
-        # Buttons usually don't need an external label, their own is enough, (but they do need one)
-        if klass in widgets_buttons:
-
-            labels = obj.findall("property[@name='label']")
-            if len(labels) > 1:
-                err(filename, tree, obj, "multiple-label", "has multiple label properties")
-            if len(labels) >= 1:
-                # Has a <property name="label">
-                return
-
-            actions = obj.findall("property[@name='action_name']")
-            if len(actions) > 1:
-                err(filename, tree, obj, "multiple-action_name", "has multiple action_name properties")
-            if len(actions) >= 1:
-                # Has a <property name="action_name">
-                return
-
-            # no label for a button, warn
-            warn(filename, tree, obj, "button-no-label", "does not have its own label");
-            return
-
-        # GtkImages special case
-        if klass == "GtkImage":
-            uses = [u for u in tree.iterfind(".//object/property[@name='image']") if u.text == oid]
-            if len(uses) > 0:
-                # This image is just used by another element, don't warn
-                # about the image itself, we probably want the warning on
-                # the element instead.
-                return
-
-        # GtkEntry special case
-        if klass == 'GtkEntry':
-            parent = elm_parent(root, obj)
-            if parent is not None:
-                if parent.tag == 'child' and \
-                    parent.attrib.get('internal-child') == "entry":
-                    # This is an internal entry of another widget. Relations
-                    # will be handled by that widget.
-                    return
-
-
-        # Really no label, perhaps emit a warning
-
-        if not orphaned:
-            # No orphaned label, so probably the labelled parent provides enough
-            # context.
-            if requires_label:
-                # But these always need a label.
-                warn(filename, tree, obj, "no-labelled-by", "has no accessibility label")
-            return
-
-        context = elm_name(orphan_root)
-        if context:
-            context = " within " + context
-        warn(filename, tree, obj, "no-labelled-by", "has no accessibility label while there are orphaned labels" + context)
-        return
+        # Emit orphaning warnings
+        is_orphaned_widget(filename, tree, root, obj, orphaned, orphan_root, True)
 
     root = tree.getroot()
 
