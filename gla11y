@@ -195,12 +195,13 @@ outfile = None
 
 pflag = False
 
-Werror = False
-Wnone = False
 errors = 0
 errexists = 0
 warnings = 0
 warnexists = 0
+
+enables = [ ]
+doerrors = [ ]
 
 #
 # XML browsing and printing functions
@@ -373,55 +374,61 @@ def elm_suppr(filename, tree, elm, msgtype):
 
     return (prefix, suppr)
 
-def err(filename, tree, elm, msgtype, msg):
+def is_enabled(elm, msgtype, l, default):
     """
-    Emit an error for an element
+    Test whether warning type msgtype is enabled for elm in l
     """
-    global errors, errexists
+    enabled = default
+    for (enable, thetype, klass) in l:
+        # Match warning type
+        if thetype is not None:
+            if thetype != msgtype:
+                continue
+        # Match elm class
+        if klass is not None and elm is not None:
+            if klass != elm.attrib.get('class'):
+                continue
+        enabled = enable
+    return enabled
 
-    (prefix, suppr) = elm_suppr(filename, tree, elm, msgtype)
-
-    if suppr in suppressions:
-        # Suppressed
-        suppressions[suppr] = False
-        errexists += 1
-        return
-
-    errors += 1
-    msg = "%s ERROR: %s%s" % (prefix, elm_name(elm), msg)
-    print(msg)
-    if outfile is not None:
-        print(msg, file=outfile)
-
-
-def warn(filename, tree, elm, msgtype, msg):
+def err(filename, tree, elm, msgtype, msg, error = True):
     """
-    Emit a warning for an element
+    Emit a warning or error for an element
     """
-    global Werror, Wnone, errors, errexists, warnings, warnexists
+    global errors, errexists, warnings, warnexists
 
-    if Wnone:
-        return
+    # Let user tune whether a warning or error
+    error = is_enabled(elm, msgtype, doerrors, error)
 
     (prefix, suppr) = elm_suppr(filename, tree, elm, msgtype)
     if suppr in suppressions:
         # Suppressed
         suppressions[suppr] = False
-        if Werror:
+        if error:
             errexists += 1
         else:
             warnexists += 1
         return
 
-    if Werror:
+    # By default warnings and errors are enabled, but let user tune it
+    if not is_enabled(elm, msgtype, enables, True):
+        return
+
+    if error:
         errors += 1
     else:
         warnings += 1
 
-    msg = "%s WARNING: %s%s" % (prefix, elm_name(elm), msg)
+    msg = "%s %s: %s%s" % (prefix, "ERROR" if error else "WARNING", elm_name(elm), msg)
     print(msg)
     if outfile is not None:
         print(msg, file=outfile)
+
+def warn(filename, tree, elm, msgtype, msg):
+    """
+    Emit a warning for an element
+    """
+    err(filename, tree, elm, msgtype, msg, False)
 
 #
 # Labelling testing functions
@@ -825,7 +832,7 @@ def check_a11y_relation(filename, tree):
 #
 
 def usage():
-    print("%s [-W error|none] [-p] [-g SUPPR_FILE] [-s SUPPR_FILE] [-i WIDGET1,WIDGET2[,...]] [-o LOG_FILE] [file ...]" % progname,
+    print("%s [-p] [-g SUPPR_FILE] [-s SUPPR_FILE] [-i WIDGET1,WIDGET2[,...]] [-o LOG_FILE] [file ...]" % progname,
           file=sys.stderr)
     print("")
     print("  -p Print XML class path instead of line number")
@@ -844,6 +851,26 @@ def usage():
     print("                      (e.g. GtkButton)")
     print("    - labels        : widgets which provide labels (e.g. GtkLabel)")
     print("  --widgets-print print default widgets lists")
+    print("")
+    print("  --enable-all         enable all warnings/errors (default)")
+    print("  --disable-all        disable all warnings/errors")
+    print("  --error-all          make all warnings errors")
+    print("  --no-error-all       do not make all warnings errors (default)")
+    print("")
+    print("  --enable-type=TYPE   enable warning/error type TYPE")
+    print("  --disable-type=TYPE  disable warning/error type TYPE")
+    print("  --error-type=TYPE    make warning type TYPE an error")
+    print("  --no-error-type=TYPE make warning type TYPE not an error")
+    print("")
+    print("  --enable-widgets=CLASS   enable warning/error type CLASS")
+    print("  --disable-widgets=CLASS  disable warning/error type CLASS")
+    print("  --error-widgets=CLASS    make warning type CLASS an error")
+    print("  --no-error-widgets=CLASS make warning type CLASS not an error")
+    print("")
+    print("  --enable=TYPE.CLASS   enable warning/error type TYPE for widget class CLASS")
+    print("  --disable=TYPE.CLASS  disable warning/error type TYPE for widget class CLASS")
+    print("  --error=TYPE.CLASS    make warning type TYPE an error for widget class CLASS")
+    print("  --no-error=TYPE.CLASS make warning type TYPE not an error for widget class CLASS")
     sys.exit(2)
 
 def widgets_opt(widgets_list, arg):
@@ -866,12 +893,12 @@ def widgets_opt(widgets_list, arg):
 
 
 def main():
-    global pflag, Werror, Wnone, gen_suppr, gen_supprfile, suppressions, suppr_prefix, errors
+    global pflag, gen_suppr, gen_supprfile, suppressions, suppr_prefix, errors
     global widgets_toplevel, widgets_ignored, widgets_suffixignored, widgets_needlabel, widgets_buttons, widgets_labels
     global outfile
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "W:piIg:s:P:o:L:", [
+        opts, args = getopt.getopt(sys.argv[1:], "piIg:s:P:o:L:", [
                 "widgets-toplevel=",
                 "widgets-ignored=",
                 "widgets-suffixignored=",
@@ -879,6 +906,26 @@ def main():
                 "widgets-buttons=",
                 "widgets-labels=",
                 "widgets-print",
+
+                "enable-all",
+                "disable-all",
+                "error-all",
+                "no-error-all",
+
+                "enable-type=",
+                "disable-type=",
+                "error-type=",
+                "no-error-type=",
+
+                "enable-widgets=",
+                "disable-widgets=",
+                "error-widgets=",
+                "no-error-widgets=",
+
+                "disable=",
+                "enable=",
+                "error=",
+                "no-error=",
             ] )
     except getopt.GetoptError:
         usage()
@@ -888,12 +935,7 @@ def main():
     filelist = None
 
     for o, a in opts:
-        if o == "-W":
-            if a == "error":
-                Werror = True
-            elif a == "none":
-                Wnone = True
-        elif o == "-p":
+        if o == "-p":
             pflag = True
         elif o == "-g":
             gen_suppr = a
@@ -905,6 +947,7 @@ def main():
             out = a
         elif o == "-L":
             filelist = a
+
         elif o == "--widgets-toplevel":
             widgets_opt(widgets_toplevel, a)
         elif o == "--widgets-ignored":
@@ -925,6 +968,46 @@ def main():
             print("--widgets-buttons '" + ','.join(widgets_buttons) + "'")
             print("--widgets-labels '" + ','.join(widgets_labels) + "'")
             sys.exit(0)
+
+        elif o == '--enable-all':
+            enables.append( (True, None, None) )
+        elif o == '--disable-all':
+            enables.append( (False, None, None) )
+        elif o == '--error-all':
+            doerrors.append( (True, None, None) )
+        elif o == '--no-error-all':
+            doerrors.append( (False, None, None) )
+
+        elif o == '--enable-type':
+            enables.append( (True, a, None) )
+        elif o == '--disable-type':
+            enables.append( (False, a, None) )
+        elif o == '--error-type':
+            doerrors.append (True, a, None)
+        elif o == '--no-error-type':
+            doerrors.append (False, a, None)
+
+        elif o == '--enable-widgets':
+            enables.append( (True, None, a) )
+        elif o == '--disable-widgets':
+            enables.append( (False, None, a) )
+        elif o == '--error-widgets':
+            doerrors.append (True, None, a)
+        elif o == '--no-error-widgets':
+            doerrors.append (False, None, a)
+
+        elif o == '--enable':
+            (thetype, klass) = a.split('.', 2)
+            enables.append( (True, thetype, klass) )
+        elif o == '--disable':
+            (thetype, klass) = a.split('.', 2)
+            enables.append( (False, thetype, klass) )
+        elif o == '--error':
+            (thetype, klass) = a.split('.', 2)
+            doerrors.append (True, thetype, klass)
+        elif o == '--no-error':
+            (thetype, klass) = a.split('.', 2)
+            doerrors.append (False, thetype, klass)
 
     # Read suppression file before overwriting it
     if suppr is not None:
