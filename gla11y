@@ -195,6 +195,8 @@ outfile = None
 
 pflag = False
 
+warn_orphaned_labels = True
+
 errors = 0
 errexists = 0
 warnings = 0
@@ -564,6 +566,9 @@ def is_orphaned_widget(filename, tree, root, obj, orphaned, orphan_root, doprint
     """
     Check whether this widget has no accessibility relation.
     """
+    if obj.tag != 'object':
+        return False
+
     oid = obj.attrib.get('id')
     klass = obj.attrib.get('class')
 
@@ -680,20 +685,29 @@ def is_orphaned_widget(filename, tree, root, obj, orphaned, orphan_root, doprint
         warn(filename, tree, obj, "no-labelled-by", "has no accessibility label while there are orphaned labels" + context)
     return True
 
-def orphaned_labels(filename, tree, root, elm):
+def orphaned_items(filename, tree, root, elm):
     """
-    Check whether from some element there exists an orphaned label
+    Check whether from some element there exists orphaned labels and orphaned widgets
     """
-    if elm.attrib.get('class') in widgets_labels and \
-        is_orphaned_label(filename, tree, root, elm):
-        return True
+    orphaned_labels = False
+    orphaned_widgets = False
+    if elm.attrib.get('class') in widgets_labels:
+        orphaned_labels = is_orphaned_label(filename, tree, root, elm)
+    else:
+        orphaned_widgets = is_orphaned_widget(filename, tree, root, elm, True, None)
     for obj in elm:
         # We are not interested in orphaned labels under another labelled
         # parent.  This also allows to keep linear complexity.
         if not is_labelled_parent(obj):
-            if orphaned_labels(filename, tree, root, obj):
-                return True
-    return False
+            label, widget = orphaned_items(filename, tree, root, obj)
+            if label:
+                orphaned_labels = True
+            if widget:
+                orphaned_widgets = True
+            if orphaned_labels and orphaned_widgets:
+                # No need to look up more
+                break
+    return orphaned_labels, orphaned_widgets
 
 #
 # UI accessibility checks
@@ -735,10 +749,10 @@ def check_a11y_relation(filename, tree):
     """
     global widgets_ignored, ids, label_for_elm, labelled_by_elm, mnemonic_for_elm
 
-    def check_elm(orphan_root, obj, orphaned):
+    def check_elm(orphan_root, obj, orphaned_labels, orphaned_widgets):
         """
-        Check one element, knowing that orphaned tells whether there are
-        orphaned labels within orphan_root
+        Check one element, knowing that orphaned_labels/widgets tell whether
+        there are orphaned labels and widgets within orphan_root
         """
 
         oid = obj.attrib.get('id')
@@ -786,8 +800,6 @@ def check_a11y_relation(filename, tree):
         # Check member-of
         member_of = check_rels(filename, tree, root, obj, "member-of")
 
-        # TODO: we'll want to be able to only show orphaned labels when there are orphaned widgets
-
         # Labels special case
         if klass in widgets_labels:
             properties = check_props(filename, tree, root, obj, "mnemonic_widget")
@@ -796,7 +808,8 @@ def check_a11y_relation(filename, tree):
                     "%s" % elms_lines(properties))
 
             # Emit orphaning warnings
-            is_orphaned_label(filename, tree, root, obj, True)
+            if warn_orphaned_labels or orphaned_widgets:
+                is_orphaned_label(filename, tree, root, obj, True)
 
             # We are done with the label
             return
@@ -804,7 +817,7 @@ def check_a11y_relation(filename, tree):
         # Not a label, will perhaps need one
 
         # Emit orphaning warnings
-        is_orphaned_widget(filename, tree, root, obj, orphaned, orphan_root, True)
+        is_orphaned_widget(filename, tree, root, obj, orphaned_labels, orphan_root, True)
 
     root = tree.getroot()
 
@@ -853,18 +866,18 @@ def check_a11y_relation(filename, tree):
 
     # Second pass, recursive depth-first, to be able to efficiently know whether
     # there are orphaned labels within a part of the tree.
-    def recurse(orphan_root, obj, orphaned):
+    def recurse(orphan_root, obj, orphaned_labels, orphaned_widgets):
         if obj == root or is_labelled_parent(obj):
             orphan_root = obj
-            orphaned = orphaned_labels(filename, tree, root, obj)
+            orphaned_labels, orphaned_widgets = orphaned_items(filename, tree, root, obj)
 
         if obj.tag == 'object':
-            check_elm(orphan_root, obj, orphaned)
+            check_elm(orphan_root, obj, orphaned_labels, orphaned_widgets)
 
         for o in obj:
-            recurse(orphan_root, o, orphaned)
+            recurse(orphan_root, o, orphaned_labels, orphaned_widgets)
 
-    recurse(root, root, False)
+    recurse(root, root, False, False)
 
 #
 # Main
@@ -894,22 +907,29 @@ def usage():
     print("  --enable-all         enable all warnings/dofatals (default)")
     print("  --disable-all        disable all warnings/dofatals")
     print("  --fatal-all          make all warnings dofatals")
-    print("  --not-fatal-all       do not make all warnings dofatals (default)")
+    print("  --not-fatal-all      do not make all warnings dofatals (default)")
     print("")
-    print("  --enable-type=TYPE   enable warning/fatal type TYPE")
-    print("  --disable-type=TYPE  disable warning/fatal type TYPE")
-    print("  --fatal-type=TYPE    make warning type TYPE an fatal")
+    print("  --enable-type=TYPE    enable warning/fatal type TYPE")
+    print("  --disable-type=TYPE   disable warning/fatal type TYPE")
+    print("  --fatal-type=TYPE     make warning type TYPE an fatal")
     print("  --not-fatal-type=TYPE make warning type TYPE not an fatal")
     print("")
-    print("  --enable-widgets=CLASS   enable warning/fatal type CLASS")
-    print("  --disable-widgets=CLASS  disable warning/fatal type CLASS")
-    print("  --fatal-widgets=CLASS    make warning type CLASS an fatal")
+    print("  --enable-widgets=CLASS    enable warning/fatal type CLASS")
+    print("  --disable-widgets=CLASS   disable warning/fatal type CLASS")
+    print("  --fatal-widgets=CLASS     make warning type CLASS an fatal")
     print("  --not-fatal-widgets=CLASS make warning type CLASS not an fatal")
     print("")
-    print("  --enable-specific=TYPE.CLASS   enable warning/fatal type TYPE for widget class CLASS")
-    print("  --disable-specific=TYPE.CLASS  disable warning/fatal type TYPE for widget class CLASS")
-    print("  --fatal-specific=TYPE.CLASS    make warning type TYPE an fatal for widget class CLASS")
-    print("  --not-fatal-specific=TYPE.CLASS make warning type TYPE not an fatal for widget class CLASS")
+    print("  --enable-specific=TYPE.CLASS    enable warning/fatal type TYPE for widget")
+    print("                                  class CLASS")
+    print("  --disable-specific=TYPE.CLASS   disable warning/fatal type TYPE for widget")
+    print("                                  class CLASS")
+    print("  --fatal-specific=TYPE.CLASS     make warning type TYPE an fatal for widget")
+    print("                                  class CLASS")
+    print("  --not-fatal-specific=TYPE.CLASS make warning type TYPE not an fatal for widget")
+    print("                                  class CLASS")
+    print("")
+    print("  --disable-orphan-labels         only warn about orphaned labels when there are")
+    print("                                  orphaned widgets in the same context")
     sys.exit(2)
 
 def widgets_opt(widgets_list, arg):
@@ -932,7 +952,7 @@ def widgets_opt(widgets_list, arg):
 
 
 def main():
-    global pflag, gen_suppr, gen_supprfile, suppressions, suppr_prefix, dofatals
+    global pflag, gen_suppr, gen_supprfile, suppressions, suppr_prefix, dofatals, enables, dofatals, warn_orphaned_labels
     global widgets_toplevel, widgets_ignored, widgets_suffixignored, widgets_needlabel, widgets_buttons, widgets_labels
     global outfile
 
@@ -965,6 +985,8 @@ def main():
                 "disable-specific=",
                 "fatal-specific=",
                 "not-fatal-specific=",
+
+                "disable-orphan-labels",
             ] )
     except getopt.GetoptError:
         usage()
@@ -1047,6 +1069,9 @@ def main():
         elif o == '--not-fatal-specific':
             (thetype, klass) = a.split('.', 1)
             dofatals.append( (False, thetype, klass) )
+
+        elif o == '--disable-orphan-labels':
+            warn_orphaned_labels = False
 
     # Read suppression file before overwriting it
     if suppr is not None:
