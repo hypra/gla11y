@@ -461,6 +461,10 @@ def err(filename, tree, elm, msgtype, msg, error = True):
     # Let user tune whether a warning or error
     fatal = is_enabled(elm, msgtype, dofatals, error)
 
+    # By default warnings and errors are enabled, but let user tune it
+    if not is_enabled(elm, msgtype, enables, True):
+        return
+
     (prefix, suppr) = elm_suppr(filename, tree, elm, msgtype)
     if suppr in suppressions:
         # Suppressed
@@ -471,10 +475,6 @@ def err(filename, tree, elm, msgtype, msg, error = True):
             errexists += 1
         else:
             warnexists += 1
-        return
-
-    # By default warnings and errors are enabled, but let user tune it
-    if not is_enabled(elm, msgtype, enables, True):
         return
 
     if error:
