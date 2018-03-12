@@ -191,7 +191,7 @@ widgets_labels = [
     'GtkAccelLabel',
 ]
 
-# The rest should probably be labelled if there are orphaned labels
+# The rest should probably be labelled if there are orphan labels
 
 # GtkSpinner
 # GtkProgressBar
@@ -252,7 +252,7 @@ outfile = None
 
 pflag = False
 
-warn_orphaned_labels = True
+warn_orphan_labels = True
 
 errors = 0
 errexists = 0
@@ -599,7 +599,7 @@ def elm_labelled_parent(root, elm):
             parent = None
         return parent
 
-def is_orphaned_label(filename, tree, root, obj, doprint = False):
+def is_orphan_label(filename, tree, root, obj, doprint = False):
     """
     Check whether this label has no accessibility relation, or doubtful relation
     because another label labels the same target
@@ -629,11 +629,11 @@ def is_orphaned_label(filename, tree, root, obj, doprint = False):
             return True
 
     if len(label_for) > 0:
-        # At least one label-for, we are not orphaned.
+        # At least one label-for, we are not orphan.
         return False
 
     if len(mnemonic_for) > 0:
-        # At least one mnemonic_widget, we are not orphaned.
+        # At least one mnemonic_widget, we are not orphan.
         return False
 
     labelled_by = obj.findall("accessibility/relation[@type='labelled-by']")
@@ -648,7 +648,7 @@ def is_orphaned_label(filename, tree, root, obj, doprint = False):
             childtype = parent.attrib.get('internal-child')
         if parent.tag == 'child' and childtype == 'label' \
                                   or childtype == 'tab':
-            # This is a frame or a notebook label, not orphaned.
+            # This is a frame or a notebook label, not orphan.
             return False
 
     if find_button_parent(root, obj) is not None:
@@ -658,16 +658,16 @@ def is_orphaned_label(filename, tree, root, obj, doprint = False):
     oid = obj.attrib.get('oid')
     if oid is not None:
         if oid in labelled_by_elm:
-            # Some widget is labelled by us, we are not orphaned.
+            # Some widget is labelled by us, we are not orphan.
             # We should have had a label-for, will warn about it later.
             return False
 
-    # No label-for, no mnemonic-for, no labelled-by, we are orphaned.
+    # No label-for, no mnemonic-for, no labelled-by, we are orphan.
     if doprint:
         warn(filename, tree, obj, "orphan-label", "does not specify what it labels")
     return True
 
-def is_orphaned_widget(filename, tree, root, obj, orphaned, orphan_root, doprint = False):
+def is_orphan_widget(filename, tree, root, obj, orphan, orphan_root, doprint = False):
     """
     Check whether this widget has no accessibility relation.
     """
@@ -793,8 +793,8 @@ def is_orphaned_widget(filename, tree, root, obj, orphaned, orphan_root, doprint
     if not is_enabled(obj, "no-labelled-by", enables, True):
         return False
 
-    if not orphaned:
-        # No orphaned label, so probably the labelled parent provides enough
+    if not orphan:
+        # No orphan label, so probably the labelled parent provides enough
         # context.
         if requires_label:
             # But these always need a label.
@@ -807,32 +807,32 @@ def is_orphaned_widget(filename, tree, root, obj, orphaned, orphan_root, doprint
         context = elm_name(orphan_root)
         if context:
             context = " within " + context
-        warn(filename, tree, obj, "no-labelled-by", "has no accessibility label while there are orphaned labels" + context)
+        warn(filename, tree, obj, "no-labelled-by", "has no accessibility label while there are orphan labels" + context)
     return True
 
-def orphaned_items(filename, tree, root, elm):
+def orphan_items(filename, tree, root, elm):
     """
-    Check whether from some element there exists orphaned labels and orphaned widgets
+    Check whether from some element there exists orphan labels and orphan widgets
     """
-    orphaned_labels = False
-    orphaned_widgets = False
+    orphan_labels = False
+    orphan_widgets = False
     if elm.attrib.get('class') in widgets_labels:
-        orphaned_labels = is_orphaned_label(filename, tree, root, elm)
+        orphan_labels = is_orphan_label(filename, tree, root, elm)
     else:
-        orphaned_widgets = is_orphaned_widget(filename, tree, root, elm, True, None)
+        orphan_widgets = is_orphan_widget(filename, tree, root, elm, True, None)
     for obj in elm:
-        # We are not interested in orphaned labels under another labelled
+        # We are not interested in orphan labels under another labelled
         # parent.  This also allows to keep linear complexity.
         if not is_labelled_parent(obj):
-            label, widget = orphaned_items(filename, tree, root, obj)
+            label, widget = orphan_items(filename, tree, root, obj)
             if label:
-                orphaned_labels = True
+                orphan_labels = True
             if widget:
-                orphaned_widgets = True
-            if orphaned_labels and orphaned_widgets:
+                orphan_widgets = True
+            if orphan_labels and orphan_widgets:
                 # No need to look up more
                 break
-    return orphaned_labels, orphaned_widgets
+    return orphan_labels, orphan_widgets
 
 #
 # UI accessibility checks
@@ -874,10 +874,10 @@ def check_a11y_relation(filename, tree):
     """
     global widgets_ignored, ids, label_for_elm, labelled_by_elm, mnemonic_for_elm
 
-    def check_elm(orphan_root, obj, orphaned_labels, orphaned_widgets):
+    def check_elm(orphan_root, obj, orphan_labels, orphan_widgets):
         """
-        Check one element, knowing that orphaned_labels/widgets tell whether
-        there are orphaned labels and widgets within orphan_root
+        Check one element, knowing that orphan_labels/widgets tell whether
+        there are orphan labels and widgets within orphan_root
         """
 
         oid = obj.attrib.get('id')
@@ -933,8 +933,8 @@ def check_a11y_relation(filename, tree):
                     "%s" % elms_lines(properties))
 
             # Emit orphaning warnings
-            if warn_orphaned_labels or orphaned_widgets:
-                is_orphaned_label(filename, tree, root, obj, True)
+            if warn_orphan_labels or orphan_widgets:
+                is_orphan_label(filename, tree, root, obj, True)
 
             # We are done with the label
             return
@@ -942,7 +942,7 @@ def check_a11y_relation(filename, tree):
         # Not a label, will perhaps need one
 
         # Emit orphaning warnings
-        is_orphaned_widget(filename, tree, root, obj, orphaned_labels, orphan_root, True)
+        is_orphan_widget(filename, tree, root, obj, orphan_labels, orphan_root, True)
 
     root = tree.getroot()
 
@@ -990,17 +990,17 @@ def check_a11y_relation(filename, tree):
                     mnemonic_for_elm[target].append(obj)
 
     # Second pass, recursive depth-first, to be able to efficiently know whether
-    # there are orphaned labels within a part of the tree.
-    def recurse(orphan_root, obj, orphaned_labels, orphaned_widgets):
+    # there are orphan labels within a part of the tree.
+    def recurse(orphan_root, obj, orphan_labels, orphan_widgets):
         if obj == root or is_labelled_parent(obj):
             orphan_root = obj
-            orphaned_labels, orphaned_widgets = orphaned_items(filename, tree, root, obj)
+            orphan_labels, orphan_widgets = orphan_items(filename, tree, root, obj)
 
         if obj.tag == 'object':
-            check_elm(orphan_root, obj, orphaned_labels, orphaned_widgets)
+            check_elm(orphan_root, obj, orphan_labels, orphan_widgets)
 
         for o in obj:
-            recurse(orphan_root, o, orphaned_labels, orphaned_widgets)
+            recurse(orphan_root, o, orphan_labels, orphan_widgets)
 
     recurse(root, root, False, False)
 
@@ -1053,8 +1053,8 @@ def usage():
     print("  --not-fatal-specific=TYPE.CLASS make warning type TYPE not an fatal for widget")
     print("                                  class CLASS")
     print("")
-    print("  --disable-orphan-labels         only warn about orphaned labels when there are")
-    print("                                  orphaned widgets in the same context")
+    print("  --disable-orphan-labels         only warn about orphan labels when there are")
+    print("                                  orphan widgets in the same context")
     sys.exit(2)
 
 def widgets_opt(widgets_list, arg):
@@ -1077,7 +1077,7 @@ def widgets_opt(widgets_list, arg):
 
 
 def main():
-    global pflag, gen_suppr, gen_supprfile, suppressions, suppr_prefix, dofatals, enables, dofatals, warn_orphaned_labels
+    global pflag, gen_suppr, gen_supprfile, suppressions, suppr_prefix, dofatals, enables, dofatals, warn_orphan_labels
     global widgets_toplevel, widgets_ignored, widgets_suffixignored, widgets_needlabel, widgets_buttons, widgets_labels
     global outfile
 
@@ -1196,7 +1196,7 @@ def main():
             dofatals.append( (False, thetype, klass) )
 
         elif o == '--disable-orphan-labels':
-            warn_orphaned_labels = False
+            warn_orphan_labels = False
 
     # Read suppression file before overwriting it
     if suppr is not None:
