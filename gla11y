@@ -754,6 +754,8 @@ def is_orphaned_widget(filename, tree, root, obj, orphaned, orphan_root, doprint
         # no label for a button, warn
         if doprint:
             warn(filename, tree, obj, "button-no-label", "does not have its own label");
+        if not is_enabled(obj, "button-no-label", enables, True):
+            return False
         return True
 
     # GtkImages special case
@@ -788,6 +790,8 @@ def is_orphaned_widget(filename, tree, root, obj, orphaned, orphan_root, doprint
 
 
     # Really no label, perhaps emit a warning
+    if not is_enabled(obj, "no-labelled-by", enables, True):
+        return False
 
     if not orphaned:
         # No orphaned label, so probably the labelled parent provides enough
