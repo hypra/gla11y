@@ -1255,7 +1255,7 @@ def main():
         print(wstr)
 
     n = 0
-    for (suppr,unused) in suppressions.iteritems():
+    for (suppr,unused) in suppressions.items():
         if unused:
             n += 1
 
