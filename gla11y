@@ -46,6 +46,8 @@ widgets_toplevel = [
     'GtkRecentChooserDialog',
     'GtkAssistant',
     'GtkAppChooserDialog',
+    'GtkPrintUnixDialog',
+    'GtkShortcutsWindow',
 ]
 
 widgets_ignored = widgets_toplevel + [
@@ -62,7 +64,11 @@ widgets_ignored = widgets_toplevel + [
     'GtkToolbar',
     'GtkToolpalette',
     'GtkPaned',
+    'GtkHPaned',
+    'GtkVPaned',
     'GtkButtonBox',
+    'GtkHButtonBox',
+    'GtkVButtonBox',
     'GtkLayout',
     'GtkFixed',
     'GtkEventBox',
@@ -74,18 +80,35 @@ widgets_ignored = widgets_toplevel + [
     'GtkSearchBar',
     'GtkHeaderBar',
     'GtkStack',
+    'GtkStackSwticher',
     'GtkPopover',
     'GtkPopoverMenu',
     'GtkActionBar',
+    'GtkHandleBox',
+    'GtkShortcutsSection',
+    'GtkShortcutsGroup',
+    'GtkTable',
 
     'GtkVBox',
     'GtkHBox',
+    'GtkToolItem',
+    'GtkMenu',
 
     # Invisible actions
     'GtkSeparator',
+    'GtkHSeparator',
+    'GtkVSeparator',
     'GtkAction',
+    'GtkToggleAction',
     'GtkActionGroup',
+    'GtkCellRendererGraph',
+    'GtkCellRendererPixbuf',
+    'GtkCellRendererProgress',
+    'GtkCellRendererSpin',
     'GtkCellRendererText',
+    'GtkCellRendererToggle',
+    'GtkSeparatorMenuItem',
+    'GtkSeparatorToolItem',
 
     # Storage objects
     'GtkListStore',
@@ -95,6 +118,8 @@ widgets_ignored = widgets_toplevel + [
 
     'GtkEntryBuffer',
     'GtkTextBuffer',
+    'GtkTextTag',
+    'GtkTextTagTable',
 
     'GtkSizeGroup',
     'GtkWindowGroup',
@@ -110,28 +135,16 @@ widgets_ignored = widgets_toplevel + [
 
     'GtkTreeSelection',
 
+    'GtkListBoxRow',
+
     # Useless to label
     'GtkScrollbar',
+    'GtkHScrollbar',
     'GtkStatusbar',
+    'GtkInfoBar',
 
     # These are actually labels
     'GtkLinkButton',
-
-    # Menus are fine
-    'GtkMenu',
-    'GtkMenuItem',
-    'GtkRadioMenuItem',
-    'GtkSeparatorMenuItem',
-    'GtkCheckMenuItem',
-
-    # Toolbars are fine
-    # FIXME: err, they need an action name
-    'GtkSeparatorToolItem',
-    'GtkToggleToolButton',
-    'GtkRadioToolButton',
-    'GtkMenuToolButton',
-    'GtkToolButton',
-    'GtkToolItem',
 
     # This precisely give a11y information :)
     'AtkObject',
@@ -143,7 +156,10 @@ widgets_suffixignored = [
 # These widgets always need a label
 widgets_needlabel = [
     'GtkEntry',
+    'GtkSearchEntry',
     'GtkScale',
+    'GtkHScale',
+    'GtkVScale',
     'GtkSpinButton',
     'GtkSwitch',
 ]
@@ -151,13 +167,22 @@ widgets_needlabel = [
 # These widgets normally have their own label
 widgets_buttons = [
     'GtkButton',
-    'GtkToggleButton',
     'GtkToolButton',
+    'GtkToggleButton',
+    'GtkToggleToolButton',
     'GtkRadioButton',
+    'GtkRadioToolButton',
     'GtkCheckButton',
     'GtkModelButton',
-    'GtkScaleButton',
     'GtkLockButton',
+    'GtkColorButton',
+    'GtkMenuButton',
+
+    'GtkMenuItem',
+    'GtkImageMenuItem',
+    'GtkMenuToolButton',
+    'GtkRadioMenuItem',
+    'GtkCheckMenuItem',
 ]
 
 # These widgets are labels that can label other widgets
@@ -166,18 +191,50 @@ widgets_labels = [
     'GtkAccelLabel',
 ]
 
-# To include for LO for sure:
-# svxcorelo-SvxColorListBox
-# svxcorelo-SvxLanguageBox comme ComboBox
-# foruilo-RefButton
-# sfxlo-SvxCharView
-# foruilo-RefEdit
-# svxcorelo-PaperSizeListBox comme combobox
-# mettre tous les svxcorelo?
+# The rest should probably be labelled if there are orphaned labels
 
-# svtlo-SvSimpleTableContainer ?
-# svxcorelo-SvxCheckListBox ?
-# svtlo-SvTreeListBox ?
+# GtkSpinner
+# GtkProgressBar
+# GtkLevelBar
+
+# GtkComboBox
+# GtkComboBoxText
+# GtkFileChooserButton
+# GtkAppChooserButton
+# GtkFontButton
+# GtkCalendar
+# GtkColorChooserWidget
+
+# GtkCellView
+# GtkTreeView
+# GtkTreeViewColumn
+# GtkTextView
+# GtkIconView
+
+# GtkImage
+# GtkArrow
+# GtkDrawingArea
+
+# GtkScaleButton
+# GtkVolumeButton
+
+
+# TODO:
+# GtkColorPlane ?
+# GtkColorScale ?
+# GtkColorSwatch ?
+# GtkFileChooserWidget ?
+# GtkFishbowl ?
+# GtkFontChooserWidget ?
+# GtkIcon ?
+# GtkInspector* ?
+# GtkMagnifier ?
+# GtkPathBar ?
+# GtkPlacesSidebar ?
+# GtkPlacesView ?
+# GtkPrinterOptionWidget ?
+# GtkStackCombo ?
+# GtkStackSidebar ?
 
 progname = os.path.basename(sys.argv[0])
 
@@ -452,6 +509,10 @@ def is_labelled_parent(elm):
     klass = elm.attrib.get('class')
     if klass in widgets_toplevel:
         return True
+    if klass == 'GtkShortcutsGroup':
+        children = elm.findall("property[@name='title']")
+        if len(children) >= 1:
+            return True
     if klass == 'GtkFrame' or klass == 'GtkNotebook':
         children = elm.findall("child[@type='tab']") + elm.findall("child[@type='label']") 
         if len(children) >= 1:
@@ -656,7 +717,7 @@ def is_orphaned_widget(filename, tree, root, obj, orphaned, orphan_root, doprint
             return False
 
     # GtkEntry special case
-    if klass == 'GtkEntry':
+    if klass == 'GtkEntry' or klass == 'GtkSearchEntry':
         parent = elm_parent(root, obj)
         if parent is not None:
             if parent.tag == 'child' and \
@@ -664,6 +725,12 @@ def is_orphaned_widget(filename, tree, root, obj, orphaned, orphan_root, doprint
                 # This is an internal entry of another widget. Relations
                 # will be handled by that widget.
                 return False
+
+    # GtkShortcutsShortcut special case
+    if klass == 'GtkShortcutsShortcut':
+        children = obj.findall("property[@name='title']")
+        if len(children) >= 1:
+            return False
 
 
     # Really no label, perhaps emit a warning
