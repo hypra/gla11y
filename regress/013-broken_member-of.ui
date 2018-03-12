@@ -3,6 +3,7 @@
 <child internal-child="vbox">
 	<child>
 		<object class="GtkCheckButton" id="colsb1">
+                        <property name="label">label</property>
 		</object>
 	</child>
         <child>

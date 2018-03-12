@@ -6,7 +6,7 @@
 			<object class="GtkLabel">
 			</object>
 		</child>
-		<object class="GtkCheckButton" id="check">
+		<object class="GtkEntry" id="check">
 		</object>
 	</object>
 </child>

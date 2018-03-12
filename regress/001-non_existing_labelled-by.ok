@@ -1,2 +1,3 @@
-001-non_existing_labelled-by.ui:4 ERROR: 'GtkEntry' 'delimpb' labelled-by uses undeclared target 'character'
+001-non_existing_labelled-by.ui:4 FATAL ERROR: 'GtkEntry' 'delimpb' labelled-by uses undeclared target 'character'
 1 new error
+1 new fatal

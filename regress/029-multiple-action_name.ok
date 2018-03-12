@@ -1,2 +1,3 @@
-029-multiple-action_name.ui:4 ERROR: 'GtkButton' 'ok' has multiple action_name properties
+029-multiple-action_name.ui:4 FATAL ERROR: 'GtkButton' 'ok' has multiple action_name properties
 1 new error
+1 new fatal
