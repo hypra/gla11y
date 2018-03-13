@@ -1,2 +1,2 @@
-006-empty_GtkLabel.ui:9 WARNING: 'GtkLabel' 'column' does not specify what it labels
+006-empty_GtkLabel.ui:9 WARNING: 'GtkLabel' 'column' does not specify what it labels within 'GtkFrame' 'frame1' 
 1 new warning
