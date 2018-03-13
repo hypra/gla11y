@@ -722,7 +722,7 @@ def is_orphan_widget(filename, tree, root, obj, orphan, orphan_root, doprint = F
     tooltips = obj.findall("property[@name='tooltip_text']")
     if len(tooltips) > 1 and doprint:
         err(filename, tree, obj, "multiple-tooltip", "has multiple tooltip_text properties")
-    if len(tooltips) >= 1:
+    if len(tooltips) >= 1 and klass != 'GtkCheckButton':
         return False
 
     # Case 6: Has a <property name="placeholder_text">
