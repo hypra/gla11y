@@ -599,7 +599,7 @@ def elm_labelled_parent(root, elm):
             parent = None
         return parent
 
-def is_orphan_label(filename, tree, root, obj, doprint = False):
+def is_orphan_label(filename, tree, root, obj, orphan_root, doprint = False):
     """
     Check whether this label has no accessibility relation, or doubtful relation
     because another label labels the same target
@@ -658,7 +658,10 @@ def is_orphan_label(filename, tree, root, obj, doprint = False):
 
     # No label-for, no mnemonic-for, no labelled-by, we are orphan.
     if doprint:
-        warn(filename, tree, obj, "orphan-label", "does not specify what it labels")
+        context = elm_name(orphan_root)
+        if context:
+            context = " within " + context
+        warn(filename, tree, obj, "orphan-label", "does not specify what it labels" + context)
     return True
 
 def is_orphan_widget(filename, tree, root, obj, orphan, orphan_root, doprint = False):
@@ -811,7 +814,7 @@ def orphan_items(filename, tree, root, elm):
     orphan_labels = False
     orphan_widgets = False
     if elm.attrib.get('class') in widgets_labels:
-        orphan_labels = is_orphan_label(filename, tree, root, elm)
+        orphan_labels = is_orphan_label(filename, tree, root, elm, None)
     else:
         orphan_widgets = is_orphan_widget(filename, tree, root, elm, True, None)
     for obj in elm:
@@ -928,7 +931,7 @@ def check_a11y_relation(filename, tree):
 
             # Emit orphaning warnings
             if warn_orphan_labels or orphan_widgets:
-                is_orphan_label(filename, tree, root, obj, True)
+                is_orphan_label(filename, tree, root, obj, orphan_root, True)
 
             # We are done with the label
             return
