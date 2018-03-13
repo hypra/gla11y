@@ -405,7 +405,7 @@ def elms_names_lines(elms):
     """
     return ', '.join([elm_name_line(elm) for elm in elms])
 
-def elm_suppr(filename, tree, elm, msgtype):
+def elm_suppr(filename, tree, elm, msgtype, dogen):
     """
     Return the prefix to be displayed to the user and the suppression line for
     the warning type "msgtype" for element "elm"
@@ -420,7 +420,7 @@ def elm_suppr(filename, tree, elm, msgtype):
     if suppressions or gen_suppr is not None:
         suppr = '%s %s' % (prefix, msgtype)
 
-        if gen_suppr is not None and msgtype is not None:
+        if gen_suppr is not None and msgtype is not None and dogen:
             if gen_supprfile is None:
                 gen_supprfile = open(gen_suppr, 'w')
             print(suppr, file=gen_supprfile)
@@ -465,7 +465,7 @@ def err(filename, tree, elm, msgtype, msg, error = True):
     if not is_enabled(elm, msgtype, enables, True):
         return
 
-    (prefix, suppr) = elm_suppr(filename, tree, elm, msgtype)
+    (prefix, suppr) = elm_suppr(filename, tree, elm, msgtype, True)
     if suppr in suppressions:
         # Suppressed
         suppressions[suppr] = False
@@ -657,7 +657,7 @@ def is_orphan_label(filename, tree, root, obj, orphan_root, doprint = False):
             return False
 
     # No label-for, no mnemonic-for, no labelled-by, we are orphan.
-    (_, suppr) = elm_suppr(filename, tree, obj, "orphan-label")
+    (_, suppr) = elm_suppr(filename, tree, obj, "orphan-label", False)
     if suppr in suppressions:
         # Warning suppressed for this label
         return False
@@ -759,7 +759,7 @@ def is_orphan_widget(filename, tree, root, obj, orphan, orphan_root, doprint = F
         if not is_enabled(obj, "button-no-label", enables, True):
             # Warnings disabled
             return False
-        (_, suppr) = elm_suppr(filename, tree, obj, "button-no-label")
+        (_, suppr) = elm_suppr(filename, tree, obj, "button-no-label", False)
         if suppr in suppressions:
             # Warning suppressed for this widget
             return False
@@ -800,7 +800,7 @@ def is_orphan_widget(filename, tree, root, obj, orphan, orphan_root, doprint = F
     if not is_enabled(obj, "no-labelled-by", enables, True):
         # Warnings disabled for this class of widgets
         return False
-    (_, suppr) = elm_suppr(filename, tree, obj, "no-labelled-by")
+    (_, suppr) = elm_suppr(filename, tree, obj, "no-labelled-by", False)
     if suppr in suppressions:
         # Warning suppressed for this widget
         return False
