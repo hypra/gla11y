@@ -328,14 +328,15 @@ def errpath(filename, tree, elm):
     if oid is not None:
         oid = oid.encode('ascii','ignore').decode('ascii')
         path += "[@id='%s']" % oid
-    if lxml:
-        elm = elm.getparent()
-        while elm is not None:
-            step = step_elm(elm)
-            path = step + path
-            elm = elm.getparent()
     else:
-        path = find_elm(tree.getroot(), elm)[:-1]
+        if lxml:
+            elm = elm.getparent()
+            while elm is not None:
+                step = step_elm(elm)
+                path = step + path
+                elm = elm.getparent()
+        else:
+            path = find_elm(tree.getroot(), elm)[:-1]
     path = filename + ':' + path
     return path
 
