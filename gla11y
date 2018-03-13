@@ -606,12 +606,6 @@ def is_orphan_label(filename, tree, root, obj, doprint = False):
     """
     global label_for_elm, labelled_by_elm, mnemonic_for_elm
 
-    # This is not a label for something, ignore it.
-    # TODO: standard way instead of no-label-for?
-    no_label_for = obj.findall("accessibility/relation[@type='no-label-for']")
-    if len(no_label_for) > 0:
-        return False
-
     # label-for
     label_for = obj.findall("accessibility/relation[@type='label-for']")
     for rel in label_for:
