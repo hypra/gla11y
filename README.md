@@ -75,3 +75,18 @@ makes all warnings (and errors) fatal except for myWiget widgets.  Conversely
 	gla11y --not-fatal-all --fatal-type undeclared-target $(find . -name \*.ui)
 
 makes all warnings and errors non-fatal, except error undeclared-target.
+
+
+False positives
+---------------
+
+We have taken great care to avoid false positives, but sometimes they just can't
+be detected automatically :) The simplest way to avoid them is then to blacklist
+them. The -f option can be used like -s to suppress warnings, except that they
+will not be reported at all any more.
+
+This means that after creating a suppression file that silents the existing
+errors to concentrate first on avoiding new accessibility issues, one can work
+no warnings for existing issues by either fixing them, or moving the suppression
+line from the suppression file passed to the -s option to the suppression file
+passed to the -f option.
