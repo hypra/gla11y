@@ -87,6 +87,6 @@ will not be reported at all any more.
 
 This means that after creating a suppression file that silents the existing
 errors to concentrate first on avoiding new accessibility issues, one can work
-no warnings for existing issues by either fixing them, or moving the suppression
+on warnings for existing issues by either fixing them, or moving the suppression
 line from the suppression file passed to the -s option to the suppression file
 passed to the -f option.
