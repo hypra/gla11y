@@ -1,80 +1,77 @@
-GLA11Y(1) - General Commands Manual
+GLA11Y
+======
 
-# NAME
+This tool checks accessibility of .ui files.
 
-**gla11y** - check accessibility of glade widgets
 
-# SYNOPSIS
+Basic use
+---------
 
-**gla11y**
-\[**-pW**]
-\[**-i**&nbsp;*widgets*]
-\[**-l**&nbsp;*log*&nbsp;\[**-a**]]
-\[*file&nbsp;...*]
+The typical use is running
 
-# DESCRIPTION
+    	gla11y $(find . -name \*.ui)
 
-The
-**gla11y**
-utility check if
-*file*
-respect glade accessibility rules.
-It prints messages for every error it encounters.
+which will emit all kinds of warnings.
 
-The options are as follows:
 
-**-a**
+Using suppressions
+------------------
 
-> Append messages to
-> *log*
-> instead of printing them to stdout.
-> This option has no effect unless
-> **-l**
-> is specified.
+If there are a lot of warnings for existing issues, it may be preferrable for a
+start to only show new warnings: run once
 
-**-i** *widgets*
+    	gla11y -g suppressions $(find . -name \*.ui)
 
-> Do not check elements whose class is listed in
-> *widgets*.
-> By default the following widgets are ignored:
-> *GtkBox*,
-> *GtkVBox*.
+to create a `suppressions' file which contains rules to suppress the warnings
+found at the time of generation, and after that,
 
-**-I**
+    	gla11y -s suppressions $(find . -name \*.ui)
 
-> Do not ignore any widget.
+will only display warnings for new issues.
 
-**-l** *log*
+If the paths given to the tool are absolute, the -P option allows to remove a
+prefix from the paths.
 
-> Do not print messages already present in
-> *log*.
-> This option implies
-> **-p**.
 
-**-p**
+Application-specific widgets
+----------------------------
 
-> Print class paths instead of line numbers in messages.
+By default, gla11y knows about Gtk standard widgets.  If the application has
+its own self-baked widgets, it may be useful to teach gla11y their role, for
+instance:
 
-**-W**
+	gla11y --widgets-ignored +myVBox,myHBox --widgets-needlabel +myEntry $(find . -name \*.ui)
 
-> Make all warnings into errors.
+The default list of recognized widgets can be obtained with --widgets-print.
 
-# EXIT STATUS
 
-The **gla11y** utility exits&#160;0 on success, and&#160;&gt;0 if an error occurs.
+Enabling/Disabling warnings
+---------------------------
 
-# EXAMPLES
+Especially when starting running gla11y over a very big project with a lot
+of existing warnings, it is useful to enable warnings progressively. The
+--enable/disable options can be used to that end. Their effect accumulate, i.e.
+each --enable/disable option overrides the effect of previous options. For
+instance:
 
-To check all the widgets but
-*GtkLabel*
-and
-*AtkObject*
-in the file sortdialog.ui:
+	gla11y --disable-all --enable-type undeclared-target $(find . -name \*.ui)
 
-	gla11y -i GtkLabel,AtkObject sortdialog.ui
+will only enable the undeclared-target warning type, while
 
-To check if new errors have been introduced in sortdialog.ui since the
-generation of
-*error.log*:
+	gla11y --enable-all --disable-specific no-labelled-by,GtkSpinner $(find . -name \*.ui)
 
-	gla11y -l error.log sortdialog.ui
+will enable all warnings, except no-labelled-by for GtkSpinner widgets.
+
+
+Fatal errors/warnings
+---------------------
+
+By default, only errors are fatal.  One can however fine-tune this, for instance:
+
+	gla11y --fatal-all --not-fatal-widgets myWidget $(find . -name \*.ui)
+
+makes all warnings (and errors) fatal except for myWiget widgets.  Conversely
+
+	gla11y --not-fatal-all --fatal-type undeclared-target $(find . -name \*.ui)
+
+makes all warnings and errors non-fatal, except error undeclared-target.

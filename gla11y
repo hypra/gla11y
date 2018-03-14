@@ -1022,24 +1022,25 @@ def check_a11y_relation(filename, tree):
 #
 
 def usage(fatal = True):
-    print("%s [-p] [-g SUPPR_FILE] [-s SUPPR_FILE] [-i WIDGET1,WIDGET2[,...]] [-o LOG_FILE] [file ...]" % progname,
-          file=sys.stderr)
+    print("`%s' checks accessibility of glade .ui files" % progname)
+    print("")
+    print("Usage: %s [-p] [-g SUPPR_FILE] [-s SUPPR_FILE] [-P PREFIX] [-i WIDGET1,WIDGET2[,...]] [-o LOG_FILE] [file ...]" % progname)
     print("")
     print("  -p Print XML class path instead of line number")
     print("  -g Generate suppression file SUPPR_FILE")
     print("  -s Suppress warnings given by file SUPPR_FILE")
-    print("  -i Ignore warnings for widgets of a given class")
+    print("  -P Remove PREFIX from file names in warnings")
     print("  -o Also prints errors and warnings to given file")
     print("")
     print("  --widgets-FOO [+][CLASS1[,CLASS2[,...]]]")
     print("    Give or extend one of the lists of widget classes, where FOO can be:")
-    print("    - toplevel      : widgets to be considered toplevel windows")
-    print("    - ignored       : widgets which do not need labelling (e.g. GtkBox)")
-    print("    - suffixignored : suffixes of widget classes which do not need labelling")
-    print("    - needlabel     : widgets which always need labelling (e.g. GtkEntry)")
-    print("    - buttons       : widgets which need their own label but not more")
-    print("                      (e.g. GtkButton)")
-    print("    - labels        : widgets which provide labels (e.g. GtkLabel)")
+    print("    * toplevel      : widgets to be considered toplevel windows")
+    print("    * ignored       : widgets which do not need labelling (e.g. GtkBox)")
+    print("    * suffixignored : suffixes of widget classes which do not need labelling")
+    print("    * needlabel     : widgets which always need labelling (e.g. GtkEntry)")
+    print("    * buttons       : widgets which need their own label but not more")
+    print("    (e.g. GtkButton)")
+    print("    * labels        : widgets which provide labels (e.g. GtkLabel)")
     print("  --widgets-print print default widgets lists")
     print("")
     print("  --enable-all         enable all warnings/dofatals (default)")
@@ -1068,6 +1069,8 @@ def usage(fatal = True):
     print("")
     print("  --disable-orphan-labels         only warn about orphan labels when there are")
     print("                                  orphan widgets in the same context")
+    print("")
+    print("Report bugs to <bugs@hypra.fr>")
     sys.exit(2 if fatal else 0)
 
 def widgets_opt(widgets_list, arg):
@@ -1097,6 +1100,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hpiIg:s:P:o:L:", [
                 "help",
+                "version",
 
                 "widgets-toplevel=",
                 "widgets-ignored=",
@@ -1138,6 +1142,9 @@ def main():
     for o, a in opts:
         if o == "--help" or o == "-h":
             usage(False)
+        if o == "--version":
+            print("0.0")
+            sys.exit(0)
         elif o == "-p":
             pflag = True
         elif o == "-g":
