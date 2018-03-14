@@ -1,3 +1,3 @@
-003-multiple_mnemonic_widget.ui:15 WARNING: 'GtkComboBoxText' 'custom' is referenced by multiple mnemonic_widget 'GtkLabel' 'customft' line 5 , 'GtkLabel' 'customft2' line 10 
-003-multiple_mnemonic_widget.ui:19 WARNING: 'GtkComboBoxText' 'custom2' has no accessibility label while there are orphan labels within 'child' line 3
+003-multiple_mnemonic_widget.ui:14 WARNING: 'GtkComboBoxText' 'custom' is referenced by multiple mnemonic_widget 'GtkLabel' 'customft' line 4 , 'GtkLabel' 'customft2' line 9 
+003-multiple_mnemonic_widget.ui:18 WARNING: 'GtkComboBoxText' 'custom2' has no accessibility label while there are orphan labels within 'child' line 2
 2 new warnings

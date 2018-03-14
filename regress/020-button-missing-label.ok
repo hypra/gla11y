@@ -1,2 +1,2 @@
-020-button-missing-label.ui:9 WARNING: 'GtkButton' 'ok' does not have its own label
+020-button-missing-label.ui:8 WARNING: 'GtkButton' 'ok' does not have its own label
 1 new warning

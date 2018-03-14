@@ -1,3 +1,3 @@
-000-multiple_a11y_children.ui:3 FATAL ERROR: 'GtkComboBox' 'typelb1' has multiple <child internal-child='accessible'> lines 4, 8
+000-multiple_a11y_children.ui:2 FATAL ERROR: 'GtkComboBox' 'typelb1' has multiple <child internal-child='accessible'> lines 3, 7
 1 new error
 1 new fatal

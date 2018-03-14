@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.20.0 -->
 <object class="GtkFrame" id="frame1">
-  <child type="label">
-  	<object class="GtkLabel" id="thelabel">
-  	</object>
-  </child>
-  <child>
-  	<object class="GtkLabel" id="column">
-  	</object>
-  </child>
+        <child type="label">
+        	<object class="GtkLabel" id="thelabel">
+        	</object>
+        </child>
+        <child>
+        	<object class="GtkLabel" id="column">
+        	</object>
+        </child>
 </object>

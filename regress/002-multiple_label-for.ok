@@ -1,6 +1,6 @@
-002-multiple_label-for.ui:5 WARNING: 'GtkSpinButton' 'colsb1' is referenced by multiple label-for 'GtkLabel' 'column' line 16 , 'GtkLabel' 'column2' line 23 
-002-multiple_label-for.ui:12 WARNING: 'GtkSpinButton' 'colsb2' has no accessibility label while there are orphan labels within 'child' line 3
-002-multiple_label-for.ui:23 FATAL ERROR: 'GtkLabel' 'column2' has label-for, but is not labelled-by by 'GtkSpinButton' 'colsb1' line 5 
+002-multiple_label-for.ui:4 WARNING: 'GtkSpinButton' 'colsb1' is referenced by multiple label-for 'GtkLabel' 'column' line 15 , 'GtkLabel' 'column2' line 22 
+002-multiple_label-for.ui:11 WARNING: 'GtkSpinButton' 'colsb2' has no accessibility label while there are orphan labels within 'child' line 2
+002-multiple_label-for.ui:22 FATAL ERROR: 'GtkLabel' 'column2' has label-for, but is not labelled-by by 'GtkSpinButton' 'colsb1' line 4 
 1 new error
 2 new warnings
 1 new fatal

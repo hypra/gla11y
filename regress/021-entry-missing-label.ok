@@ -1,2 +1,2 @@
-021-entry-missing-label.ui:9 WARNING: 'GtkEntry' 'entry' has no accessibility label
+021-entry-missing-label.ui:8 WARNING: 'GtkEntry' 'entry' has no accessibility label
 1 new warning

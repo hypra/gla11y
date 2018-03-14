@@ -1,5 +1,5 @@
-023-duplicate-id.ui:5 FATAL ERROR: 'GtkLabel' 'colsb1' has the same id as other elements 'GtkLabel' 'colsb1' line 5 , 'GtkLabel' 'colsb1' line 12 
-023-duplicate-id.ui:19 WARNING: 'GtkSpinButton' 'column' is referenced by multiple label-for 'GtkLabel' 'colsb1' line 5 , 'GtkLabel' 'colsb1' line 12 
+023-duplicate-id.ui:4 FATAL ERROR: 'GtkLabel' 'colsb1' has the same id as other elements 'GtkLabel' 'colsb1' line 4 , 'GtkLabel' 'colsb1' line 11 
+023-duplicate-id.ui:18 WARNING: 'GtkSpinButton' 'column' is referenced by multiple label-for 'GtkLabel' 'colsb1' line 4 , 'GtkLabel' 'colsb1' line 11 
 1 new error
 1 new warning
 1 new fatal
