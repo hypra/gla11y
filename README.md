@@ -90,3 +90,82 @@ errors to concentrate first on avoiding new accessibility issues, one can work
 on warnings for existing issues by either fixing them, or moving the suppression
 line from the suppression file passed to the -s option to the suppression file
 passed to the -f option.
+
+
+Warnin/errors descriptions
+--------------------------
+
+* orphan-label: 'GtkLabel' 'foo' does not specify what it labels
+
+This label does not have a relation with a widget, while a label is supposed
+to label something.  A relation should thus be added.
+
+* no-labelled-by: 'GtkEntry' 'foo' has no accessibility label
+
+This widget does not have a label, while it really should. A relation should
+thus be added.
+
+* no-labelled-by: 'GtkEntry' 'foo' has no accessibility label while there are orphan labels
+
+This widget does not have a label, while there are labels which have no
+relation.  Probably a relation should be added between them.
+
+
+* labelled-by-and-mnemonic: 'GtkEntry' 'foo' has both a mnemonic and labelled-by relation
+
+This widget has both a GtkLabel as label and a GtkLabel as mnemonic. Screen
+readers will not know what to display, probably one of the two should be removed.
+
+* multiple-labelled-by: 'GtkEntry' 'foo' has multiple labelled-by relations
+
+This widget has several GtkLabels as label. Screen readers will not know what to
+display, probably only one should be kept.
+
+* duplicate-label-for: 'GtkEntry' 'foo' is referenced by multiple label-for
+
+This widget has several GtkLabels as labels. Screen readers will not know
+what to display, probably only one should be kept.
+
+* duplicate-mnemonic: 'GtkEntry' 'foo' is referenced by multiple mnemonic_widget
+
+This widget has several GtkLabels as mnemonics. Screen readers will not know
+what to display, probably only one should be kept.
+
+
+* button-no-label: 'GtkButton' 'foo' does not have its own label
+
+Normally a button has its own label and does not need external labelling. But
+this button does not actually have its own label. Probably only an image was
+added, and an additional tooltip_text is needed.
+
+
+* missing-labelled-by: 'GtkLabel' 'foo' has label-for, but is not labelled-by by 'GtkEntry' 'bar'
+
+A relation was set between foo and bar, but not the converse between bar and
+foo, while both are always needed.  The converse needs to be added.
+
+
+* missing-label-for: 'GtkEntry' 'foo' has labelled-by, but is not label-for by 'GtkLabel' 'bar'
+
+A relation was set between foo and bar, but not the converse between bar and
+foo, while both are always needed.  The converse needs to be added.
+
+
+* undeclared-target: 'GtkLabel' 'foo' uses undeclared target 'bar'
+
+The target used in the relation does not exist.  There is probably a typo there.
+
+* duplicate-id: 'GtkLabel' 'foo' has the same id as other elements bar
+
+ids must be unique within the .ui file, there is here an id conflict which needs to be fixed.
+
+
+* multiple-accessible: 'GtkLabel' 'foo' has multiple <child internal-child='accessible'>
+
+There are several accessible sub elements, while there should be only one. They
+probably just need to be merged.
+
+* multiple-tooltip, multiple-placeholder, multiple-label, multiple-action_name, multiple-mnemonic: 'GtkEntry' 'foo' has multiple bar properties
+
+There are several 'bar' properties, gtk will not know which one to use.
+Only one should be kept.
