@@ -9,7 +9,7 @@ Basic use
 
 The typical use is running
 
-    	gla11y $(find . -name \*.ui)
+	gla11y $(find . -name \*.ui)
 
 which will emit all kinds of warnings.
 
@@ -20,12 +20,12 @@ Using suppressions
 If there are a lot of warnings for existing issues, it may be preferrable for a
 start to only show new warnings: run once
 
-    	gla11y -g suppressions $(find . -name \*.ui)
+	gla11y -g suppressions $(find . -name \*.ui)
 
 to create a `suppressions' file which contains rules to suppress the warnings
 found at the time of generation, and after that,
 
-    	gla11y -s suppressions $(find . -name \*.ui)
+	gla11y -s suppressions $(find . -name \*.ui)
 
 will only display warnings for new issues.
 
