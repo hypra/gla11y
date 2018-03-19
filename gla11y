@@ -469,6 +469,7 @@ def err(filename, tree, elm, msgtype, msg, error = True):
 
     (prefix, suppr) = elm_suppr(filename, tree, elm, msgtype, True)
     if suppr in false_positives:
+        # That was actually expected
         return
     if suppr in suppressions:
         # Suppressed
@@ -662,7 +663,10 @@ def is_orphan_label(filename, tree, root, obj, orphan_root, doprint = False):
 
     # No label-for, no mnemonic-for, no labelled-by, we are orphan.
     (_, suppr) = elm_suppr(filename, tree, obj, "orphan-label", False)
-    if suppr in suppressions or suppr in false_positives:
+    if suppr in false_positives:
+        # That was actually expected
+        return False
+    if suppr in suppressions:
         # Warning suppressed for this label
         if suppressions[suppr]:
             warnexists += 1
@@ -768,7 +772,10 @@ def is_orphan_widget(filename, tree, root, obj, orphan, orphan_root, doprint = F
             # Warnings disabled
             return False
         (_, suppr) = elm_suppr(filename, tree, obj, "button-no-label", False)
-        if suppr in suppressions or suppr in false_positives:
+        if suppr in false_positives:
+            # That was actually expected
+            return False
+        if suppr in suppressions:
             # Warning suppressed for this widget
             if suppressions[suppr]:
                 warnexists += 1
@@ -812,7 +819,10 @@ def is_orphan_widget(filename, tree, root, obj, orphan, orphan_root, doprint = F
         # Warnings disabled for this class of widgets
         return False
     (_, suppr) = elm_suppr(filename, tree, obj, "no-labelled-by", False)
-    if suppr in suppressions or suppr in false_positives:
+    if suppr in false_positives:
+        # That was actually expected
+        return False
+    if suppr in suppressions:
         # Warning suppressed for this widget
         if suppressions[suppr]:
             warnexists += 1
