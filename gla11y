@@ -558,7 +558,7 @@ def is_labelled_parent(elm):
         if len(children) >= 1:
             return True
     if klass == 'GtkFrame' or klass == 'GtkNotebook':
-        children = elm.findall("child[@type='tab']") + elm.findall("child[@type='label']") 
+        children = elm.findall("child[@type='tab']") + elm.findall("child[@type='label']")
         if len(children) >= 1:
             return True
     return False
@@ -621,7 +621,8 @@ def is_orphan_label(filename, tree, root, obj, orphan_root, doprint = False):
             return True
 
     # mnemonic_widget
-    mnemonic_for = obj.findall("property[@name='mnemonic_widget']")
+    mnemonic_for = obj.findall("property[@name='mnemonic_widget']") + \
+                   obj.findall("property[@name='mnemonic-widget']")
     for rel in mnemonic_for:
         target = rel.text
         l = mnemonic_for_elm[target]
@@ -731,14 +732,16 @@ def is_orphan_widget(filename, tree, root, obj, orphan, orphan_root, doprint = F
         return False
 
     # Case 5: Has a <property name="tooltip_text">
-    tooltips = obj.findall("property[@name='tooltip_text']")
+    tooltips = obj.findall("property[@name='tooltip_text']") + \
+               obj.findall("property[@name='tooltip-text']")
     if len(tooltips) > 1 and doprint:
         err(filename, tree, obj, "multiple-tooltip", "has multiple tooltip_text properties")
     if len(tooltips) >= 1 and klass != 'GtkCheckButton':
         return False
 
     # Case 6: Has a <property name="placeholder_text">
-    placeholders = obj.findall("property[@name='placeholder_text']")
+    placeholders = obj.findall("property[@name='placeholder_text']") + \
+                   obj.findall("property[@name='placeholder-text']")
     if len(placeholders) > 1 and doprint:
         err(filename, tree, obj, "multiple-placeholder", "has multiple placeholder_text properties")
     if len(placeholders) >= 1:
@@ -879,7 +882,7 @@ def check_props(filename, tree, root, elm, forward):
     """
     Check the given list of relation properties
     """
-    props = elm.findall("property[@name='mnemonic_widget']")
+    props = elm.findall("property[@name='" + forward + "']")
     for prop in props:
         if prop.text not in ids:
             err(filename, tree, elm, "undeclared-target", forward + " uses undeclared target '%s'" % prop.text)
@@ -964,7 +967,8 @@ def check_a11y_relation(filename, tree):
 
         # Labels special case
         if klass in widgets_labels:
-            properties = check_props(filename, tree, root, obj, "mnemonic_widget")
+            properties = check_props(filename, tree, root, obj, "mnemonic_widget") + \
+                         check_props(filename, tree, root, obj, "mnemonic-widget")
             if len(properties) > 1:
                 err(filename, tree, obj, "multiple-mnemonic", "has multiple mnemonic_widgets properties"
                     "%s" % elms_lines(properties))
@@ -1017,7 +1021,8 @@ def check_a11y_relation(filename, tree):
                 else:
                     label_for_elm[target].append(obj)
 
-        mnemonic_for = obj.findall("property[@name='mnemonic_widget']")
+        mnemonic_for = obj.findall("property[@name='mnemonic_widget']") + \
+                       obj.findall("property[@name='mnemonic-widget']")
         for rel in mnemonic_for:
             target = rel.text
             if target is not None:
