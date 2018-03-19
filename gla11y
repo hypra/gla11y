@@ -881,8 +881,7 @@ def check_props(filename, tree, root, elm, forward):
     """
     Check the given list of relation properties
     """
-    props = elm.findall("property[@name='mnemonic_widget']") + \
-            elm.findall("property[@name='mnemonic-widget']")
+    props = elm.findall("property[@name='" + forward + "']")
     for prop in props:
         if prop.text not in ids:
             err(filename, tree, elm, "undeclared-target", forward + " uses undeclared target '%s'" % prop.text)
