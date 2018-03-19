@@ -608,7 +608,7 @@ def is_orphan_label(filename, tree, root, obj, orphan_root, doprint = False):
     Check whether this label has no accessibility relation, or doubtful relation
     because another label labels the same target
     """
-    global label_for_elm, labelled_by_elm, mnemonic_for_elm
+    global label_for_elm, labelled_by_elm, mnemonic_for_elm, warnexists
 
     # label-for
     label_for = obj.findall("accessibility/relation[@type='label-for']")
@@ -664,6 +664,9 @@ def is_orphan_label(filename, tree, root, obj, orphan_root, doprint = False):
     (_, suppr) = elm_suppr(filename, tree, obj, "orphan-label", False)
     if suppr in suppressions or suppr in false_positives:
         # Warning suppressed for this label
+        if suppressions[suppr]:
+            warnexists += 1
+        suppressions[suppr] = False
         return False
 
     if doprint:
@@ -677,6 +680,7 @@ def is_orphan_widget(filename, tree, root, obj, orphan, orphan_root, doprint = F
     """
     Check whether this widget has no accessibility relation.
     """
+    global warnexists
     if obj.tag != 'object':
         return False
 
@@ -766,6 +770,9 @@ def is_orphan_widget(filename, tree, root, obj, orphan, orphan_root, doprint = F
         (_, suppr) = elm_suppr(filename, tree, obj, "button-no-label", False)
         if suppr in suppressions or suppr in false_positives:
             # Warning suppressed for this widget
+            if suppressions[suppr]:
+                warnexists += 1
+            suppressions[suppr] = False
             return False
         return True
 
@@ -807,6 +814,9 @@ def is_orphan_widget(filename, tree, root, obj, orphan, orphan_root, doprint = F
     (_, suppr) = elm_suppr(filename, tree, obj, "no-labelled-by", False)
     if suppr in suppressions or suppr in false_positives:
         # Warning suppressed for this widget
+        if suppressions[suppr]:
+            warnexists += 1
+        suppressions[suppr] = False
         return False
 
     if not orphan:
