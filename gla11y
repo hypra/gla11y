@@ -235,6 +235,7 @@ widgets_labels = [
 # GtkPrinterOptionWidget ?
 # GtkStackCombo ?
 # GtkStackSidebar ?
+# GtkStackSwitcher ?
 
 progname = os.path.basename(sys.argv[0])
 
