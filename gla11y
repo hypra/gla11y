@@ -328,7 +328,7 @@ def errpath(filename, tree, elm):
     oid = elm.attrib.get('id')
     if oid is not None:
         oid = oid.encode('ascii','ignore').decode('ascii')
-        path += "[@id='%s']" % oid
+        path = "//" + path + "[@id='%s']" % oid
     else:
         if lxml:
             elm = elm.getparent()
