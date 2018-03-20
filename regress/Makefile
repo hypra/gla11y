@@ -34,7 +34,8 @@ TESTS =		000-multiple_a11y_children \
 		032-mnemonic \
 		033-missing_labelled-by-but-label \
 		034-image \
-		035-labelled-label
+		035-labelled-label \
+		036-label-static
 
 LOGTESTS =	100-multiple_a11y_children
 

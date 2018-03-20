@@ -642,6 +642,16 @@ def is_orphan_label(filename, tree, root, obj, orphan_root, doprint = False):
         # Oh, a labelled label, probably not to be labelling anything
         return False
 
+    # explicit role?
+    roles = obj.findall("child[@internal-child='accessible']/object[@class='AtkObject']/property[@name='AtkObject::accessible-role']")
+    if len(roles) > 1 and doprint:
+        err(filename, tree, obj, "multiple-role", "has multiple <child internal-child='accessible'><object class='AtkObject'><property name='AtkBoject::accessible-role'>"
+            "%s" % elms_lines(children))
+    for role in roles:
+        if role.text == 'static' or role.text == 'ATK_ROLE_STATIC':
+            # This is static text, not meant to label anything
+            return False
+
     parent = elm_parent(root, obj)
     if parent is not None:
         childtype = parent.attrib.get('type')
