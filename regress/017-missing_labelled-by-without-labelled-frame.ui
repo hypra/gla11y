@@ -2,10 +2,16 @@
 <child>
 	<object class="GtkFrame">
 		<child>
-			<object class="GtkLabel">
+			<object class="GtkLabel" id="label1">
 			</object>
 		</child>
-		<object class="GtkEntry" id="check">
+		<child>
+			<object class="GtkLabel" id="label2">
+			</object>
+		</child>
+		<object class="GtkEntry" id="entry1">
+		</object>
+		<object class="GtkEntry" id="entry2">
 		</object>
 	</object>
 </child>
