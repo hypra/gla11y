@@ -1064,7 +1064,7 @@ def check_a11y_relation(filename, tree):
 def usage(fatal = True):
     print("`%s' checks accessibility of glade .ui files" % progname)
     print("")
-    print("Usage: %s [-p] [-g SUPPR_FILE] [-s SUPPR_FILE] [-f SUPPR_FILE] [-P PREFIX] [-i WIDGET1,WIDGET2[,...]] [-o LOG_FILE] [file ...]" % progname)
+    print("Usage: %s [-p] [-g SUPPR_FILE] [-s SUPPR_FILE] [-f SUPPR_FILE] [-P PREFIX] [-o LOG_FILE] [file ...]" % progname)
     print("")
     print("  -p Print XML class path instead of line number")
     print("  -g Generate suppression file SUPPR_FILE")
