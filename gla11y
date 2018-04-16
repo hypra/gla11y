@@ -1185,7 +1185,7 @@ def main():
         if o == "--help" or o == "-h":
             usage(False)
         if o == "--version":
-            print("0.0")
+            print("0.1")
             sys.exit(0)
         elif o == "-p":
             pflag = True
