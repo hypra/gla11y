@@ -1,0 +1,2 @@
+037-visibility.ui:12 WARNING: 'GtkEntry' 'column' visibility conflicts with paired 'GtkLabel' 'thelabel' line 4
+1 new warning

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object class="GtkFrame" id="frame1">
+        <child type="label">
+        	<object class="GtkLabel" id="thelabel">
+                        <property name="visible">True</property>
+                        <accessibility>
+                                <relation type="label-for" target="column"/>
+                        </accessibility>
+        	</object>
+        </child>
+        <child>
+        	<object class="GtkEntry" id="column">
+                        <property name="visible">False</property>
+                        <accessibility>
+                                <relation type="labelled-by" target="thelabel"/>
+                        </accessibility>
+        	</object>
+        </child>
+</object>
