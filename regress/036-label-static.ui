@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<child internal-child="vbox">
+        <child>
+        	<object class="GtkLabel" id="column">
+                        <child internal-child="accessible">
+                                <object class="AtkObject">
+                                        <property name="AtkObject::accessible-role">static</property>
+                                </object>
+                        </child>
+        	</object>
+        </child>
+        <child>
+        	<object class="GtkLabel" id="column2">
+                        <child internal-child="accessible">
+                                <object class="AtkObject">
+                                        <property name="AtkObject::accessible-role">ATK_ROLE_STATIC</property>
+                                </object>
+                        </child>
+        	</object>
+        </child>
+        <child>
+        	<object class="GtkLabel" id="column3">
+                        <accessibility>
+                                <role type="static"/>
+                        </accessibility>
+        	</object>
+        </child>
+</child>
