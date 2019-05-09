@@ -2,7 +2,7 @@
 # -*- tab-width: 4; indent-tabs-mode: nil; py-indent-offset: 4 -*-
 #
 # Copyright (c) 2018 Martin Pieuchot
-# Copyright (c) 2018 Samuel Thibault <sthibault@hypra.fr>
+# Copyright (c) 2018-2019 Samuel Thibault <sthibault@hypra.fr>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -265,7 +265,12 @@ fatals = 0
 fatalexists = 0
 
 enables = [ ]
-dofatals = [ ]
+dofatals = [
+    (True, None, None),
+    (False, "duplicate-mnemonic", None),
+    (False, "labelled-by-and-mnemonic", None),
+    (False, "orphan-label", None),
+]
 
 #
 # XML browsing and printing functions
@@ -1111,6 +1116,8 @@ def usage(fatal = True):
     print("")
     print("  --disable-orphan-labels         only warn about orphan labels when there are")
     print("                                  orphan widgets in the same context")
+    print("")
+    print(" By default, all warnings are considered fatal, except a few kinds (duplicate-mnemonic, labelled-by-and-mnemonic, orphan-label) which could be only doubtful")
     print("")
     print("Report bugs to <bugs@hypra.fr>")
     sys.exit(2 if fatal else 0)
