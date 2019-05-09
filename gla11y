@@ -1358,6 +1358,7 @@ def main():
     if outfile is not None:
         outfile.close()
     if fatals > 0 and gen_suppr is None:
+        print("Explanations are available on https://github.com/sthibaul/gla11y/blob/master/HOWTO.md")
         sys.exit(1)
 
 

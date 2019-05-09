@@ -3,6 +3,10 @@ GLA11Y
 
 This tool checks accessibility of .ui files.
 
+This file describes the tool itself.
+
+The HOWTO.md file describes how to fix the warnings raised by the tool.
+
 
 Basic use
 ---------
@@ -92,80 +96,41 @@ line from the suppression file passed to the -s option to the suppression file
 passed to the -f option.
 
 
-Warnin/errors descriptions
---------------------------
+Integration in a build system
+-----------------------------
 
-* orphan-label: 'GtkLabel' 'foo' does not specify what it labels
+To integrate the use of gla11y in a build system, you can for instance add to
+configure.ac:
 
-This label does not have a relation with a widget, while a label is supposed
-to label something.  A relation should thus be added.
+	AC_PATH_PROG([GLA11Y], [gla11y], [true])
 
-* no-labelled-by: 'GtkEntry' 'foo' has no accessibility label
+and introduce a new Makefile.am rule to trigger a call to gla11y:
 
-This widget does not have a label, while it really should. A relation should
-thus be added.
+	ui_files = foo.ui bar.ui
 
-* no-labelled-by: 'GtkEntry' 'foo' has no accessibility label while there are orphan labels
+	GLA11Y_OUTPUT = ui-a11y.err
+	GLA11Y_SUPPR  = ui-a11y.suppr
+	GLA11Y_FALSE  = ui-a11y.false
 
-This widget does not have a label, while there are labels which have no
-relation.  Probably a relation should be added between them.
+	all-local: $(GLA11Y_OUTPUT)
+	$(GLA11Y_OUTPUT): $(ui_files)
+		$(GLA11Y) -P $(srcdir)/ -f $(srcdir)/$(GLA11Y_FALSE) -s $(srcdir)/$(GLA11Y_SUPPR) -o $@ $(ui_files:%=$(srcdir)/%)
 
+	CLEANFILES += $(GLA11Y_OUTPUT)
+	EXTRA_DIST += $(GLA11Y_SUPPR) $(GLA11Y_FALSE)
 
-* labelled-by-and-mnemonic: 'GtkEntry' 'foo' has both a mnemonic and labelled-by relation
+and you can generate ui-a11y.suppr from an initial call to gla11y from the
+source tree:
 
-This widget has both a GtkLabel as label and a GtkLabel as mnemonic. Screen
-readers will not know what to display, probably one of the two should be removed.
+	gla11y -g ui-a11y.suppr foo.ui bar.ui
 
-* multiple-labelled-by: 'GtkEntry' 'foo' has multiple labelled-by relations
-
-This widget has several GtkLabels as label. Screen readers will not know what to
-display, probably only one should be kept.
-
-* duplicate-label-for: 'GtkEntry' 'foo' is referenced by multiple label-for
-
-This widget has several GtkLabels as labels. Screen readers will not know
-what to display, probably only one should be kept.
-
-* duplicate-mnemonic: 'GtkEntry' 'foo' is referenced by multiple mnemonic_widget
-
-This widget has several GtkLabels as mnemonics. Screen readers will not know
-what to display, probably only one should be kept.
+in order to ignore the existing warnings for a start.
 
 
-* button-no-label: 'GtkButton' 'foo' does not have its own label
-
-Normally a button has its own label and does not need external labelling. But
-this button does not actually have its own label. Probably only an image was
-added, and an additional tooltip_text is needed.
-
-
-* missing-labelled-by: 'GtkLabel' 'foo' has label-for, but is not labelled-by by 'GtkEntry' 'bar'
-
-A relation was set between foo and bar, but not the converse between bar and
-foo, while both are always needed.  The converse needs to be added.
-
-
-* missing-label-for: 'GtkEntry' 'foo' has labelled-by, but is not label-for by 'GtkLabel' 'bar'
-
-A relation was set between foo and bar, but not the converse between bar and
-foo, while both are always needed.  The converse needs to be added.
-
-
-* undeclared-target: 'GtkLabel' 'foo' uses undeclared target 'bar'
-
-The target used in the relation does not exist.  There is probably a typo there.
-
-* duplicate-id: 'GtkLabel' 'foo' has the same id as other elements bar
-
-ids must be unique within the .ui file, there is here an id conflict which needs to be fixed.
-
-
-* multiple-accessible: 'GtkLabel' 'foo' has multiple <child internal-child='accessible'>
-
-There are several accessible sub elements, while there should be only one. They
-probably just need to be merged.
-
-* multiple-tooltip, multiple-placeholder, multiple-label, multiple-action_name, multiple-mnemonic: 'GtkEntry' 'foo' has multiple bar properties
-
-There are several 'bar' properties, gtk will not know which one to use.
-Only one should be kept.
+From then on, the gla11y call will error out if new fatal warnings are produced,
+thus avoiding the corresponding accessibility regressions.  The existing
+warnings can then be worked on progressively, removing the corresponding
+suppression rules from the .suppr files accordingly.  In case of false positives
+from the tool, they can be transferred from the .suppr file to the .false file.
+See HOWTO.md for more details on the methodology, which you can point developers
+to.
