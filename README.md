@@ -139,5 +139,6 @@ to.
 Credits
 -------
 
-Gla11y was developped by Hypra (http://hypra.fr/) under the funding of The
-Document Foundation tender to implement accessibility improvements (#201704-01)
+Gla11y was developped by Hypra (http://hypra.fr/) and Martin Pieuchot under
+the funding of The Document Foundation tender to implement accessibility
+improvements (#201704-01)
