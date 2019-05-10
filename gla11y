@@ -137,6 +137,7 @@ widgets_ignored = widgets_toplevel + [
     'GtkTreeSelection',
 
     'GtkListBoxRow',
+    'GtkTreeViewColumn',
 
     # Useless to label
     'GtkScrollbar',
@@ -208,7 +209,6 @@ widgets_labels = [
 
 # GtkCellView
 # GtkTreeView
-# GtkTreeViewColumn
 # GtkTextView
 # GtkIconView
 
