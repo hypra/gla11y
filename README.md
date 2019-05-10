@@ -134,3 +134,10 @@ suppression rules from the .suppr files accordingly.  In case of false positives
 from the tool, they can be transferred from the .suppr file to the .false file.
 See HOWTO.md for more details on the methodology, which you can point developers
 to.
+
+
+Credits
+-------
+
+Gla11y was developped by Hypra (http://hypra.fr/) under the funding of The
+Document Foundation tender to implement accessibility improvements (#201704-01)
