@@ -1,3 +1,4 @@
 029-multiple-action_name.ui:3 FATAL ERROR: 'GtkButton' 'ok' has multiple action_name properties
 1 new error
 1 new fatal
+Explanations are available on https://github.com/hypra/gla11y/blob/master/HOWTO.md

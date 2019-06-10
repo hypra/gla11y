@@ -1,3 +1,4 @@
 007-multiple_label-for.ui:11 FATAL ERROR: 'GtkLabel' 'column' label-for uses undeclared target 'colsb2'
 1 new error
 1 new fatal
+Explanations are available on https://github.com/hypra/gla11y/blob/master/HOWTO.md

@@ -1,2 +1,3 @@
 037-visibility.ui:12 WARNING: 'GtkEntry' 'column' visibility conflicts with paired 'GtkLabel' 'thelabel' line 4
 1 new warning
+Explanations are available on https://github.com/hypra/gla11y/blob/master/HOWTO.md

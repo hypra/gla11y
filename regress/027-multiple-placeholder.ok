@@ -1,3 +1,4 @@
 027-multiple-placeholder.ui:3 FATAL ERROR: 'GtkEntry' 'entry' has multiple placeholder_text properties
 1 new error
 1 new fatal
+Explanations are available on https://github.com/hypra/gla11y/blob/master/HOWTO.md

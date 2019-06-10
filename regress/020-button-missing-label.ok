@@ -1,2 +1,4 @@
-020-button-missing-label.ui:8 WARNING: 'GtkButton' 'ok' does not have its own label
+020-button-missing-label.ui:8 FATAL WARNING: 'GtkButton' 'ok' does not have its own label
 1 new warning
+1 new fatal
+Explanations are available on https://github.com/hypra/gla11y/blob/master/HOWTO.md

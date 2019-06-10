@@ -1,3 +1,5 @@
 003-multiple_mnemonic_widget.ui:14 WARNING: 'GtkComboBoxText' 'custom' is referenced by multiple mnemonic_widget 'GtkLabel' 'customft' line 4 , 'GtkLabel' 'customft2' line 9 
-003-multiple_mnemonic_widget.ui:18 WARNING: 'GtkComboBoxText' 'custom2' has no accessibility label while there are orphan labels within 'child' line 2
+003-multiple_mnemonic_widget.ui:18 FATAL WARNING: 'GtkComboBoxText' 'custom2' has no accessibility label while there are orphan labels within 'child' line 2
 2 new warnings
+1 new fatal
+Explanations are available on https://github.com/hypra/gla11y/blob/master/HOWTO.md

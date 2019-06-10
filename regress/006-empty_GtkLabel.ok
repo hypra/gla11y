@@ -1,2 +1,3 @@
 006-empty_GtkLabel.ui:8 WARNING: 'GtkLabel' 'column' does not specify what it labels within 'GtkFrame' 'frame1' 
 1 new warning
+Explanations are available on https://github.com/hypra/gla11y/blob/master/HOWTO.md

@@ -1,2 +1,4 @@
-021-entry-missing-label.ui:8 WARNING: 'GtkEntry' 'entry' has no accessibility label
+021-entry-missing-label.ui:8 FATAL WARNING: 'GtkEntry' 'entry' has no accessibility label
 1 new warning
+1 new fatal
+Explanations are available on https://github.com/hypra/gla11y/blob/master/HOWTO.md

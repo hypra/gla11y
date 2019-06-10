@@ -1,3 +1,4 @@
 008-more_than_one_mnemonic_widget.ui:4 FATAL ERROR: 'GtkLabel' 'customft' has multiple mnemonic_widgets properties lines 5, 6
 1 new error
 1 new fatal
+Explanations are available on https://github.com/hypra/gla11y/blob/master/HOWTO.md

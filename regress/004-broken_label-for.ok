@@ -1,3 +1,4 @@
 004-broken_label-for.ui:18 FATAL ERROR: 'GtkLabel' 'column2' label-for uses undeclared target 'colsb2'
 1 new error
 1 new fatal
+Explanations are available on https://github.com/hypra/gla11y/blob/master/HOWTO.md
