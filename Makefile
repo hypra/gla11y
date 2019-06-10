@@ -4,11 +4,12 @@ datarootdir ?= $(prefix)/share
 mandir ?= $(datarootdir)/man
 
 INSTALL=install
+HELP2MAN=help2man
 
 all: gla11y.1
 
 gla11y.1: gla11y
-	help2man -N ./$< > $@
+	$(HELP2MAN) -N ./$< > $@
 
 check:
 	$(MAKE) -C regress/
