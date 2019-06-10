@@ -3,8 +3,8 @@ How to fix gla11y .ui accessibility warnings
 
 Some accessibility checks are automatically performed by the gla11y tool on
 the .ui files during build time.  That will fail the build if new issues are
-introduced (existing issues are suppressed for now). Here are explanations about
-warnings produced by the tool.
+introduced (existing issues are typically suppressed by suppression files). Here
+are explanations about warnings produced by the tool.
 
 The tool mostly checks for labelling: GtkLabel widgets are usually used to label
 another widget, and some widgets indeed do not make sense to users without
