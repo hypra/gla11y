@@ -73,12 +73,6 @@ can check that the warning has disappeared by running by hand
 
     gla11y path/to/file.ui
 
-or
-
-    make
-
-(but that will also check other .ui files).
-
 Also, you should ideally check that labelling actually works.  A simple way is
 to run
 
