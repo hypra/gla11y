@@ -10,6 +10,9 @@ all: gla11y.1
 gla11y.1: gla11y
 	help2man -N ./$< > $@
 
+check:
+	$(MAKE) -C regress/
+
 install: gla11y.1
 	$(INSTALL) -d $(DESTDIR)$(bindir)
 	$(INSTALL) gla11y $(DESTDIR)$(bindir)/gla11y
