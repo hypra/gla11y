@@ -8,6 +8,17 @@ This file describes the tool itself.
 The HOWTO.md file describes how to fix the warnings raised by the tool.
 
 
+Installation
+------------
+
+Just run
+
+	make install
+
+and gla11y will be installed in /usr/local/bin/ by default (can be changed by
+appending prefix=... on the make command line).
+
+
 Basic use
 ---------
 
