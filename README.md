@@ -1,7 +1,13 @@
 GLA11Y
 ======
 
-This tool checks accessibility of .ui files.
+This tool checks accessibility of GtkBuilder .ui files produced e.g. by glade
+It looks for various issues, and notably missing or bogus labelling
+relations.
+
+It can for instance be used in Continous Integration checks to make sure not to
+introduce accessibility regressions.
+
 
 This file describes the tool itself.
 
