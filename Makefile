@@ -18,7 +18,7 @@ install: gla11y.1
 	$(INSTALL) -d $(DESTDIR)$(bindir)
 	$(INSTALL) gla11y $(DESTDIR)$(bindir)/gla11y
 	$(INSTALL) -d $(DESTDIR)$(mandir)
-	$(INSTALL) -m 644 gla11y.1 $(DESTDIR)$(mandir)/gla11y.1
+	$(INSTALL) -m 644 gla11y.1 $(DESTDIR)$(mandir)/man1/gla11y.1
 
 clean:
 	rm -f gla11y.1
