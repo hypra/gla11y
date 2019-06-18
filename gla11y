@@ -1119,7 +1119,7 @@ def usage(fatal = True):
     print("  --disable-orphan-labels         only warn about orphan labels when there are")
     print("                                  orphan widgets in the same context")
     print("")
-    print(" By default, all warnings are considered fatal, except a few kinds (duplicate-mnemonic, labelled-by-and-mnemonic, orphan-label) which could be only doubtful")
+    print("By default, all warnings are considered fatal, except a few kinds (duplicate-mnemonic, labelled-by-and-mnemonic, orphan-label) which could be only doubtful")
     print("")
     print("Report bugs to <bugs@hypra.fr>")
     sys.exit(2 if fatal else 0)
