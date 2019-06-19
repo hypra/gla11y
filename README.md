@@ -1,7 +1,8 @@
-GLA11Y
+GLA11Y (glade accessibility)
 ======
 
-This tool checks accessibility of GtkBuilder .ui files produced e.g. by glade
+This tool checks accessibility of GtkBuilder .ui files
+produced e.g. by glade.
 It looks for various issues, and notably missing or bogus labelling
 relations.
 
