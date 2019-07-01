@@ -130,9 +130,14 @@ and introduce a new Makefile.am rule to trigger a call to gla11y:
 	GLA11Y_SUPPR  = ui-a11y.suppr
 	GLA11Y_FALSE  = ui-a11y.false
 
+	GLA11Y_V = $(GLA11Y_V_@AM_V@)
+	GLA11Y_V_ = $(GLA11Y_V_@AM_DEFAULT_V@)
+	GLA11Y_V_0 = @echo "  GLA11Y  " $@;
+	GLA11Y_V_1 = 
+
 	all-local: $(GLA11Y_OUTPUT)
 	$(GLA11Y_OUTPUT): $(ui_files)
-		$(GLA11Y) -P $(srcdir)/ -f $(srcdir)/$(GLA11Y_FALSE) -s $(srcdir)/$(GLA11Y_SUPPR) -o $@ $(ui_files:%=$(srcdir)/%)
+		$(GLA11Y_V) $(GLA11Y) -P $(srcdir)/ -f $(srcdir)/$(GLA11Y_FALSE) -s $(srcdir)/$(GLA11Y_SUPPR) -o $@ $(ui_files:%=$(srcdir)/%)
 
 	CLEANFILES += $(GLA11Y_OUTPUT)
 	EXTRA_DIST += $(GLA11Y_SUPPR) $(GLA11Y_FALSE)
