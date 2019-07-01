@@ -168,6 +168,19 @@ accessibility relation, in addition to the standard label-for. For now, the
 suppression rule should be kept in the .suppr file, so we remember to fix them
 once the new relation is available.
 
+* In some cases the label is only used to describe a group of options, and is
+thus not for one precise widget but a group of them. The label is typically the
+first child of a vertical GtkBox. In this case, a GtkFrame should be inserted
+between the upper container and the GtkBox, and the GtkLabel set as
+
+```
+    <child type="label">
+        ... GtkLabel definition ...
+    </child>
+```
+
+of the GtkFrame.
+
 * In some cases labels are really there for quite trivial reasons ( it is there
 only for visual coherence but does not provide any meaning). In such cases a
 suppression rule should be added to the .false file.
