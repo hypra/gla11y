@@ -9,7 +9,7 @@ HELP2MAN=help2man
 all: gla11y.1
 
 gla11y.1: gla11y
-	$(HELP2MAN) -N ./$< > $@
+	$(HELP2MAN) -N -n "Check accessibility of glade .ui files" ./$< > $@
 
 check:
 	$(MAKE) -C regress/
