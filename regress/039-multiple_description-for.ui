@@ -4,6 +4,7 @@
 		<object class="GtkSpinButton" id="colsb1">
 			<accessibility>
 				<relation type="described-by" target="column"/>
+				<relation type="described-by" target="column2"/>
 			</accessibility>
 		</object>
 	</child>

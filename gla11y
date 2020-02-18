@@ -1004,9 +1004,6 @@ def check_a11y_relation(filename, tree):
         if oid in label_for_elm:
             if len(label_for_elm[oid]) > 1:
                 warn(filename, tree, obj, "duplicate-label-for", "is referenced by multiple label-for " + elms_names_lines(label_for_elm[oid]))
-        if oid in description_for_elm:
-            if len(description_for_elm[oid]) > 1:
-                warn(filename, tree, obj, "duplicate-description-for", "is referenced by multiple description-for " + elms_names_lines(description_for_elm[oid]))
         if oid in mnemonic_for_elm:
             if len(mnemonic_for_elm[oid]) > 1:
                 warn(filename, tree, obj, "duplicate-mnemonic", "is referenced by multiple mnemonic_widget " + elms_names_lines(mnemonic_for_elm[oid]))

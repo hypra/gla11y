@@ -1,7 +1,4 @@
-039-multiple_description-for.ui:4 FATAL WARNING: 'GtkSpinButton' 'colsb1' is referenced by multiple description-for 'GtkLabel' 'column' line 15 , 'GtkLabel' 'column2' line 22 
-039-multiple_description-for.ui:11 FATAL WARNING: 'GtkSpinButton' 'colsb2' has no accessibility label
-039-multiple_description-for.ui:22 FATAL ERROR: 'GtkLabel' 'column2' has description-for, but is not described-by by 'GtkSpinButton' 'colsb1' line 4 
-1 new error
-2 new warnings
-3 new fatals
+039-multiple_description-for.ui:12 FATAL WARNING: 'GtkSpinButton' 'colsb2' has no accessibility label
+1 new warning
+1 new fatal
 Explanations are available on https://github.com/hypra/gla11y/blob/master/HOWTO.md
