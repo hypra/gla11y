@@ -635,11 +635,6 @@ def is_orphan_label(filename, tree, root, obj, orphan_root, doprint = False):
 
     # description-for
     description_for = obj.findall("accessibility/relation[@type='description-for']")
-    for rel in description_for:
-        target = rel.attrib['target']
-        l = description_for_elm[target]
-        if len(l) > 1:
-            return True
 
     # mnemonic_widget
     mnemonic_for = obj.findall("property[@name='mnemonic_widget']") + \
@@ -652,6 +647,10 @@ def is_orphan_label(filename, tree, root, obj, orphan_root, doprint = False):
 
     if len(label_for) > 0:
         # At least one label-for, we are not orphan.
+        return False
+
+    if len(description_for) > 0:
+        # At least one description-for, we are not orphan.
         return False
 
     if len(mnemonic_for) > 0:
