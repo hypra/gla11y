@@ -231,6 +231,22 @@ labelled-by relation, we also need the corresponding label-for relation.  Here,
 one probably just needs to add to the 'labelfoo' widget a 'label-for' relation
 targetting 'foobar'.
 
+'GtkLabel' 'labelfoo' has description-for, but is not described-by by 'GtkFoo' 'foobar' line 123
+------------------------------------------------------------------------------------------------
+
+description-for / described-by relations have to be set by pair: if we have a
+description-for relation, we also need the corresponding described-by relation.
+Here, one probably just needs to add to the 'foobar' widget a 'described-by'
+relation targetting 'labelfoo'.
+
+'GtkFoo' 'foobar' has described-by, but is not description-for by 'GtkLabel' 'labelfoo' line 123
+------------------------------------------------------------------------------------------------
+
+description-for / described-by relations have to be set by pair: if we have
+a described-by relation, we also need the corresponding description-for
+relation.  Here, one probably just needs to add to the 'labelfoo' widget a
+'description-for' relation targetting 'foobar'.
+
 'GtkButton' 'foobutton' does not have its own label
 ---------------------------------------------------
 
