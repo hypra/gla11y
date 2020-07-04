@@ -1470,7 +1470,7 @@ def main():
         gen_supprfile.close()
     if outfile is not None:
         outfile.close()
-    if (warnings > 0 or fatals > 0) and gen_suppr is None:
+    if (warnings > 0 or errors > 0 or fatals > 0) and gen_suppr is None:
         print("Explanations are available on " + howto_url)
         sys.exit(1)
 
