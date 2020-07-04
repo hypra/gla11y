@@ -1464,7 +1464,7 @@ def main():
         print("%s suppression%s unused:" % (n, 's' if n > 1 else ''))
         for (suppr,unused) in suppressions.items():
             if unused:
-                print(suppressions_to_line[suppr] + ": " + suppr)
+                print("    %s:%s" % (suppressions_to_line[suppr], suppr))
 
     if gen_supprfile is not None:
         gen_supprfile.close()
