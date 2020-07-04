@@ -251,7 +251,7 @@ suppressions = {}
 
 # This dictionary is indexed like suppressions and returns a "file:line" string
 # to report where in the suppression file the suppression was read
-suppressions_lines = {}
+suppressions_to_line = {}
 
 # This dictionary is similar to the suppressions dictionary, but for false
 # positives rather than suppressions
@@ -1389,7 +1389,7 @@ def main():
             for line in supprfile.readlines():
                 prefix = line.rstrip()
                 suppressions[prefix] = True
-                suppressions_lines[prefix] = "%s:%u" % (suppr, n)
+                suppressions_to_line[prefix] = "%s:%u" % (suppr, n)
                 n += 1
             supprfile.close()
         except IOError:
@@ -1464,7 +1464,7 @@ def main():
         print("%s suppression%s unused:" % (n, 's' if n > 1 else ''))
         for (suppr,unused) in suppressions.items():
             if unused:
-                print(suppressions_lines[suppr] + ": " + suppr)
+                print(suppressions_to_line[suppr] + ": " + suppr)
 
     if gen_supprfile is not None:
         gen_supprfile.close()
