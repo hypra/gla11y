@@ -1437,22 +1437,23 @@ def main():
             traceback.print_exc()
             err(filename, None, None, "parse", "error parsing file")
 
+    wstr = ""
     if errors > 0 or errexists > 0:
-        estr = "%s new error%s" % (errors, 's' if errors > 1 else '')
+        wstr = "%s new error%s" % (errors, 's' if errors > 1 else '')
         if errexists > 0:
-            estr += " (%s suppressed by %s, please fix %s, see %s)" % (errexists, suppr, 'them' if errexists > 1 else 'it', howto_url)
-        print(estr)
+            wstr += " (%s suppressed by %s, please fix %s)" % (errexists, suppr, 'them' if errexists > 1 else 'it')
+        print(wstr)
 
     if warnings > 0 or warnexists > 0:
         wstr = "%s new warning%s" % (warnings, 's' if warnings > 1 else '')
         if warnexists > 0:
-            wstr += " (%s suppressed by %s, please fix %s, see %s)" % (warnexists, suppr, 'them' if warnexists > 1 else 'it', howto_url)
+            wstr += " (%s suppressed by %s, please fix %s)" % (warnexists, suppr, 'them' if warnexists > 1 else 'it')
         print(wstr)
 
     if fatals > 0 or fatalexists > 0:
         wstr = "%s new fatal%s" % (fatals, 's' if fatals > 1 else '')
         if fatalexists > 0:
-            wstr += " (%s suppressed by %s, please fix %s, see %s)" % (fatalexists, suppr, 'them' if fatalexists > 1 else 'it', howto_url)
+            wstr += " (%s suppressed by %s, please fix %s)" % (fatalexists, suppr, 'them' if fatalexists > 1 else 'it')
         print(wstr)
 
     n = 0
@@ -1470,9 +1471,11 @@ def main():
         gen_supprfile.close()
     if outfile is not None:
         outfile.close()
-    if (warnings > 0 or errors > 0 or fatals > 0) and gen_suppr is None:
-        print("Explanations are available on " + howto_url)
-        sys.exit(1)
+    if gen_suppr is None:
+        if wstr:
+            print("Explanations are available on " + howto_url)
+        if fatals > 0:
+            sys.exit(1)
 
 
 if __name__ == "__main__":
