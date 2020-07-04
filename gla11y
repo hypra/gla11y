@@ -1385,12 +1385,12 @@ def main():
     if suppr is not None:
         try:
             supprfile = open(suppr, 'r')
-            n = 1
+            line_no = 1
             for line in supprfile.readlines():
                 prefix = line.rstrip()
                 suppressions[prefix] = True
-                suppressions_to_line[prefix] = "%s:%u" % (suppr, n)
-                n += 1
+                suppressions_to_line[prefix] = "%s:%u" % (suppr, line_no)
+                line_no += 1
             supprfile.close()
         except IOError:
             pass
