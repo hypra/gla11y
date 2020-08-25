@@ -22,3 +22,4 @@ install: gla11y.1
 
 clean:
 	rm -f gla11y.1
+	rm -fr build dist gla11y.egg-info
