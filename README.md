@@ -12,7 +12,10 @@ introduce accessibility regressions.
 
 This file describes the tool itself.
 
-The HOWTO.md file describes how to fix the warnings raised by the tool.
+The [HOWTO](HOWTO) file describes how to fix the warnings raised by the tool.
+
+The [doc/gla11y](doc/gla11y) file provides rationale for the heuristics used by
+gla11y.
 
 
 Installation
