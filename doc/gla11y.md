@@ -1,5 +1,7 @@
 # gla11y: checking accessibility labelling of glade-based application user interfaces
 
+Samuel Thibault, Hypra
+
 When users employ a screen reader to navigate within an application user
 interface, they need to perceive the context of the currently-focused
 widget. For entries notably, they need to be sure what information
