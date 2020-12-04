@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<child internal-child="vbox">
+	<child>
+		<object class="GtkLabel" id="colsb1">
+			<accessibility>
+				<relation name="description-for" target="column"/>
+			</accessibility>
+		</object>
+	</child>
+	<child>
+		<object class="GtkSpinButton" id="column">
+			<accessibility>
+				<relation name="described-by" target="colsb1"/>
+			</accessibility>
+		</object>
+	</child>
+</child>

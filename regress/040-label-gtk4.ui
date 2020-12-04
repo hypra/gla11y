@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<child internal-child="vbox">
+	<child>
+		<object class="GtkButton" id="button1">
+			<accessibility>
+				<property name="label">Foo</property>
+			</accessibility>
+		</object>
+	</child>
+</child>

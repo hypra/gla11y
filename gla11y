@@ -685,6 +685,7 @@ def is_orphan_label(filename, tree, root, obj, orphan_root, doprint = False):
 
     # label-for
     label_for = obj.findall("accessibility/relation[@type='label-for']")
+    label_for += obj.findall("accessibility/relation[@name='label-for']")
     for rel in label_for:
         target = rel.attrib['target']
         l = label_for_elm[target]
@@ -693,6 +694,7 @@ def is_orphan_label(filename, tree, root, obj, orphan_root, doprint = False):
 
     # description-for
     description_for = obj.findall("accessibility/relation[@type='description-for']")
+    description_for += obj.findall("accessibility/relation[@name='description-for']")
 
     # mnemonic_widget
     mnemonic_for = obj.findall("property[@name='mnemonic_widget']") + \
@@ -716,6 +718,7 @@ def is_orphan_label(filename, tree, root, obj, orphan_root, doprint = False):
         return False
 
     labelled_by = obj.findall("accessibility/relation[@type='labelled-by']")
+    labelled_by += obj.findall("accessibility/relation[@name='labelled-by']")
     if len(labelled_by) > 0:
         # Oh, a labelled label, probably not to be labelling anything
         return False
@@ -799,6 +802,9 @@ def is_orphan_widget(filename, tree, root, obj, orphan, orphan_root, doprint = F
     requires_label = klass in widgets_needlabel
 
     labelled_by = obj.findall("accessibility/relation[@type='labelled-by']")
+    labelled_by += obj.findall("accessibility/relation[@name='labelled-by']")
+
+    label = obj.findall("accessibility/property[@name='label']")
 
     label = obj.findall("accessibility/property[@name='label']")
 
@@ -998,6 +1004,7 @@ def check_rels(filename, tree, root, elm, forward, backward = None):
     """
     oid = elm.attrib.get('id')
     rels = elm.findall("accessibility/relation[@type='" + forward + "']")
+    rels += elm.findall("accessibility/relation[@name='" + forward + "']")
     for rel in rels:
         target = rel.attrib['target']
         if target not in ids:
@@ -1005,6 +1012,7 @@ def check_rels(filename, tree, root, elm, forward, backward = None):
         elif backward is not None:
             widget = ids[target]
             backrels = widget.findall("accessibility/relation[@type='" + backward + "']")
+            backrels += widget.findall("accessibility/relation[@name='" + backward + "']")
             if len([x for x in backrels if x.attrib['target'] == oid]) == 0:
                 err(filename, tree, elm, "missing-" + backward, "has " + forward + \
                     ", but is not " + backward + " by " + elm_name_line(widget))
@@ -1116,6 +1124,7 @@ def check_a11y_relation(filename, tree):
                 ids_dup[oid] = True
 
         labelled_by = obj.findall("accessibility/relation[@type='labelled-by']")
+        labelled_by += obj.findall("accessibility/relation[@name='labelled-by']")
         for rel in labelled_by:
             target = rel.attrib.get('target')
             if target is not None:
@@ -1125,6 +1134,7 @@ def check_a11y_relation(filename, tree):
                     labelled_by_elm[target].append(obj)
 
         label_for = obj.findall("accessibility/relation[@type='label-for']")
+        label_for += obj.findall("accessibility/relation[@name='label-for']")
         for rel in label_for:
             target = rel.attrib.get('target')
             if target is not None:
@@ -1134,6 +1144,7 @@ def check_a11y_relation(filename, tree):
                     label_for_elm[target].append(obj)
 
         described_by = obj.findall("accessibility/relation[@type='described-by']")
+        described_by += obj.findall("accessibility/relation[@name='described-by']")
         for rel in described_by:
             target = rel.attrib.get('target')
             if target is not None:
@@ -1143,6 +1154,7 @@ def check_a11y_relation(filename, tree):
                     described_by_elm[target].append(obj)
 
         description_for = obj.findall("accessibility/relation[@type='description-for']")
+        description_for += obj.findall("accessibility/relation[@name='description-for']")
         for rel in description_for:
             target = rel.attrib.get('target')
             if target is not None:
