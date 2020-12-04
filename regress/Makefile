@@ -37,7 +37,8 @@ TESTS =		000-multiple_a11y_children \
 		035-labelled-label \
 		036-label-static \
 		038-description-for \
-		039-multiple_description-for
+		039-multiple_description-for \
+		040-label-gtk4
 
 LOGTESTS =	100-multiple_a11y_children
 

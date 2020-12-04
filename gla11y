@@ -800,6 +800,8 @@ def is_orphan_widget(filename, tree, root, obj, orphan, orphan_root, doprint = F
 
     labelled_by = obj.findall("accessibility/relation[@type='labelled-by']")
 
+    label = obj.findall("accessibility/property[@name='label']")
+
     # Labels special case
     if klass in widgets_labels:
         return False
@@ -810,6 +812,10 @@ def is_orphan_widget(filename, tree, root, obj, orphan, orphan_root, doprint = F
         err(filename, tree, obj, "multiple-accessible", "has multiple <child internal-child='accessible'>"
             "%s" % elms_lines(children))
     if len(children) >= 1:
+        return False
+
+    # Case: has an accessibility label
+    if len(label) > 0:
         return False
 
     # Case 2: has an <accessibility> sub-element with a "labelled-by"
